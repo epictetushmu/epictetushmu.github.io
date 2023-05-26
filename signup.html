@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Epictetus</title>
+<link rel = "icon" href = "logo.jpg" type = "image/x-icon">
+
 <style>
     body {font-family: Arial, Helvetica, sans-serif;}
     * {box-sizing: border-box;}
@@ -118,13 +120,16 @@
     <head>
        
         <div class="topnav">
+          <a href="https:\\ee.hmu.gr">
+            <img src="hmu.png" 
+                width="60px" 
+                height="40px"/> </a>
+            <a class="other" href="signup.html">Sign up</a>
+            <a class="other" href="contact.html">Contact</a>
+            <a class="other" href="login.html">Login</a>
+            <a class="other" href="news.html">News</a>
             <a class="active" href="main.html">Epictetus</a>
-            <a href="news.html">News</a>
-            <a href="login.html">Login</a>
-            <a href="signup.html">Sign up</a>
-            <a href="contact.html">Contact</a>
-
-    </div>
+ 
         </div> 
     </head>
 
@@ -168,7 +173,7 @@
     </div>
     <script>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-       function submit_data() {
+      function submit_data() {
         let psw = document.querySelector("#psw").value;
         let psw_repeat = document.querySelector("#psw_repeat").value;
         if(psw==psw_repeat){
@@ -183,10 +188,6 @@
           alert("passwords must be the same");
         }
       }
-
-      // Get the modal
-      var modal = document.getElementById('id01');
-
       // When the user clicks anywhere outside of the modal, close it
       window.onclick = function(event) {
           if (event.target == modal) {
