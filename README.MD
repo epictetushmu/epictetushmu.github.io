@@ -4,30 +4,47 @@
 
 ## 🌐 Project Overview
 
-This repository hosts the source code for our website, designed to make HMU a better place to study. The site includes:
+This repository hosts the source code for our Vue.js website, designed to make HMU a better place to study. The site includes:
 
 - **Home Page**: Introduction to our mission and initiatives.
 - **News Section**: Updates on recent and upcoming events.
 - **Authentication Pages**: Login and signup interfaces for users.
-- **Contact Page**: Form for visitors to reach out to the team.
+- **Contact Page**: Functional email contact form with EmailJS integration.
 - **E-Library**: Digital library with searchable catalog of electronics and engineering resources.
 
 ## 🛠️ Technologies Used
 
-- Vue.js 3 - Progressive JavaScript Framework
-- Vue Router - Official router for Vue.js
-- HTML5 & CSS3
-- JavaScript (ES6+)
-- Vite - Fast development build tool
+- **Vue.js 3** - Progressive JavaScript Framework with Composition API
+- **Vue Router** - Official router for Vue.js
+- **Vite** - Fast development build tool and bundler
+- **EmailJS** - Client-side email sending service
+- **CSS3** - Modern styling with scoped components
+- **JavaScript (ES6+)** - Modern JavaScript features
 
 ## 📁 Project Structure
 
 ```
 epictetus/
-├── public/
+├── public/              # Static assets
 │   ├── hmu.png
 │   ├── logo.jpg
 │   └── vite.svg
+├── src/
+│   ├── components/      # Reusable Vue components
+│   ├── views/          # Page components
+│   ├── router/         # Vue Router configuration
+│   ├── config/         # Application configuration
+│   ├── composables/    # Vue composables for shared logic
+│   ├── assets/         # Project assets
+│   ├── App.vue         # Root component
+│   ├── main.js         # Application entry point
+│   └── style.css       # Global styles
+├── backup/             # Legacy HTML files (migrated to Vue)
+├── .env.template       # Environment variables template
+├── EMAIL_SETUP.md      # EmailJS setup instructions
+├── package.json        # Dependencies and scripts
+├── vite.config.js      # Vite configuration
+└── index.html          # Entry HTML file
 ├── src/
 │   ├── assets/
 │   │   └── vue.svg
