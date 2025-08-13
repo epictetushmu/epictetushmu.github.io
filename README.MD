@@ -39,7 +39,6 @@ epictetus/
 │   ├── App.vue         # Root component
 │   ├── main.js         # Application entry point
 │   └── style.css       # Global styles
-├── backup/             # Legacy HTML files (migrated to Vue)
 ├── .env.template       # Environment variables template
 ├── EMAIL_SETUP.md      # EmailJS setup instructions
 ├── package.json        # Dependencies and scripts
