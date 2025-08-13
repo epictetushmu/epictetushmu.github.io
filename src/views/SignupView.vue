@@ -1,65 +1,197 @@
 <template>
-  <div class="signup">
-    <h1>Sign Up</h1>
-    <button @click="showModal = true" class="show-modal-btn">Sign Up</button>
-    
-    <div class="modal" v-if="showModal">
-      <div class="modal-content">
-        <span class="close" @click="showModal = false">&times;</span>
-        <form @submit.prevent="submitForm">
-          <h1>Sign Up</h1>
-          <p>Please fill in this form to create an account.</p>
-          <hr>
-          
+  <div class="signup page-container">
+    <div class="signup-header">
+      <h1>Join Epictetus EE Team</h1>
+      <p class="signup-description">
+        Create your account to access our digital library, participate in discussions, 
+        and stay connected with the Electronic Engineering community at HMU.
+      </p>
+    </div>
+
+    <div class="signup-form-container">
+      <form @submit.prevent="submitForm" class="signup-form">
+        <div class="form-row">
           <div class="form-group">
-            <label for="fname"><b>First Name</b></label>
-            <input type="text" v-model="form.firstName" placeholder="Enter First Name" id="fname" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="lname"><b>Last Name</b></label>
-            <input type="text" v-model="form.lastName" placeholder="Enter Last Name" id="lname" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="am"><b>Registration Number</b></label>
-            <input type="text" v-model="form.regNumber" placeholder="Enter Registration Number" id="am" required>
+            <label for="fname">First Name *</label>
+            <input 
+              type="text" 
+              id="fname"
+              v-model="form.firstName" 
+              placeholder="Enter your first name" 
+              required
+              :disabled="isSubmitting"
+            >
           </div>
           
           <div class="form-group">
-            <label for="email"><b>Email</b></label>
-            <input type="email" v-model="form.email" placeholder="Enter Email" id="email" required>
+            <label for="lname">Last Name *</label>
+            <input 
+              type="text" 
+              id="lname"
+              v-model="form.lastName" 
+              placeholder="Enter your last name" 
+              required
+              :disabled="isSubmitting"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="am">Registration Number *</label>
+          <input 
+            type="text" 
+            id="am"
+            v-model="form.regNumber" 
+            placeholder="Enter your HMU registration number" 
+            required
+            :disabled="isSubmitting"
+          >
+          <small class="field-help">Your student registration number at HMU</small>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input 
+            type="email" 
+            id="email"
+            v-model="form.email" 
+            placeholder="your.email@example.com" 
+            required
+            :disabled="isSubmitting"
+          >
+          <small class="field-help">We'll use this to send you important updates</small>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username *</label>
+          <input 
+            type="text" 
+            id="username"
+            v-model="form.username" 
+            placeholder="Choose a unique username" 
+            required
+            :disabled="isSubmitting"
+          >
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="psw">Password *</label>
+            <input 
+              type="password" 
+              id="psw"
+              v-model="form.password" 
+              placeholder="Create a strong password" 
+              required
+              :disabled="isSubmitting"
+              minlength="8"
+            >
           </div>
           
           <div class="form-group">
-            <label for="username"><b>Username</b></label>
-            <input type="text" v-model="form.username" placeholder="Enter Username" id="username" required>
+            <label for="psw_repeat">Confirm Password *</label>
+            <input 
+              type="password" 
+              id="psw_repeat"
+              v-model="form.passwordConfirm" 
+              placeholder="Repeat your password" 
+              required
+              :disabled="isSubmitting"
+              :class="{ 'error': form.password && form.passwordConfirm && form.password !== form.passwordConfirm }"
+            >
+            <small v-if="form.password && form.passwordConfirm && form.password !== form.passwordConfirm" class="error-text">
+              Passwords don't match
+            </small>
           </div>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              v-model="form.agreeToTerms" 
+              required
+              :disabled="isSubmitting"
+            >
+            <span class="checkmark"></span>
+            I agree to the <a href="#" @click.prevent="showTerms = true">Terms of Service</a> 
+            and <a href="#" @click.prevent="showPrivacy = true">Privacy Policy</a>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn btn-primary submit-btn"
+            :disabled="!canSubmit || isSubmitting"
+          >
+            <span v-if="isSubmitting" class="loading-spinner"></span>
+            {{ isSubmitting ? 'Creating Account...' : 'Create Account' }}
+          </button>
           
-          <div class="form-group">
-            <label for="psw"><b>Password</b></label>
-            <input type="password" v-model="form.password" placeholder="Enter Password" id="psw" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="psw_repeat"><b>Repeat Password</b></label>
-            <input type="password" v-model="form.passwordConfirm" placeholder="Repeat Password" id="psw_repeat" required>
-          </div>
-          
-          <div class="clearfix">
-            <button type="button" @click="showModal = false" class="cancelbtn">Cancel</button>
-            <button type="submit" class="signupbtn">Sign Up</button>
-          </div>
-        </form>
+          <p class="login-link">
+            Already have an account? 
+            <router-link to="/login">Sign in here</router-link>
+          </p>
+        </div>
+      </form>
+      
+      <div 
+        v-if="statusMessage.text" 
+        class="status-message"
+        :class="statusMessage.type"
+        role="alert"
+      >
+        {{ statusMessage.text }}
+      </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div v-if="showTerms" class="modal-overlay" @click="showTerms = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Terms of Service</h3>
+          <button @click="showTerms = false" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>By using the Epictetus EE Team platform, you agree to:</p>
+          <ul>
+            <li>Use the platform for educational and collaborative purposes</li>
+            <li>Respect other users and maintain professional conduct</li>
+            <li>Not share copyrighted materials without permission</li>
+            <li>Keep your account information secure and up to date</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div v-if="showPrivacy" class="modal-overlay" @click="showPrivacy = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Privacy Policy</h3>
+          <button @click="showPrivacy = false" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>We respect your privacy and are committed to protecting your personal information:</p>
+          <ul>
+            <li>We only collect information necessary for account creation and service improvement</li>
+            <li>Your data is stored securely and never shared with third parties</li>
+            <li>You can request data deletion at any time by contacting us</li>
+            <li>We use cookies only for essential website functionality</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-const showModal = ref(false)
+const router = useRouter()
+
 const form = reactive({
   firstName: '',
   lastName: '',
@@ -67,114 +199,380 @@ const form = reactive({
   email: '',
   username: '',
   password: '',
-  passwordConfirm: ''
+  passwordConfirm: '',
+  agreeToTerms: false
 })
 
-const submitForm = () => {
-  if (form.password !== form.passwordConfirm) {
-    alert('Passwords must be the same')
-    return
+const isSubmitting = ref(false)
+const statusMessage = reactive({
+  text: '',
+  type: ''
+})
+const showTerms = ref(false)
+const showPrivacy = ref(false)
+
+onMounted(() => {
+  document.title = 'Sign Up - Epictetus EE Team'
+})
+
+const canSubmit = computed(() => {
+  return form.firstName && 
+         form.lastName && 
+         form.regNumber && 
+         form.email && 
+         form.username && 
+         form.password && 
+         form.passwordConfirm && 
+         form.password === form.passwordConfirm && 
+         form.agreeToTerms &&
+         form.password.length >= 8
+})
+
+const showMessage = (text, type) => {
+  statusMessage.text = text
+  statusMessage.type = type
+  
+  // Clear message after 8 seconds
+  setTimeout(() => {
+    statusMessage.text = ''
+    statusMessage.type = ''
+  }, 8000)
+  
+  // Scroll to message
+  setTimeout(() => {
+    const messageElement = document.querySelector('.status-message')
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }, 100)
+}
+
+const resetForm = () => {
+  Object.keys(form).forEach(key => {
+    if (key === 'agreeToTerms') {
+      form[key] = false
+    } else {
+      form[key] = ''
+    }
+  })
+}
+
+const submitForm = async () => {
+  if (!canSubmit.value || isSubmitting.value) return
+  
+  isSubmitting.value = true
+  statusMessage.text = ''
+  
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // In a real app, this would call an authentication API
+    console.log('Account creation attempt:', { 
+      ...form, 
+      password: '***', 
+      passwordConfirm: '***' 
+    })
+    
+    showMessage(
+      'Account created successfully! You can now sign in with your credentials.', 
+      'success'
+    )
+    
+    // Reset form
+    resetForm()
+    
+    // Redirect to login after a delay
+    setTimeout(() => {
+      router.push('/login')
+    }, 2000)
+    
+  } catch (error) {
+    console.error('Failed to create account:', error)
+    showMessage(
+      'Failed to create account. Please try again later.', 
+      'error'
+    )
+  } finally {
+    isSubmitting.value = false
   }
-  
-  console.log('Form submitted:', { ...form })
-  showModal.value = false
-  
-  // Reset form
-  Object.keys(form).forEach(key => form[key] = '')
 }
 </script>
 
 <style scoped>
-/* Modal styles */
-.modal {
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
+.signup-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.signup-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.signup-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: var(--background-primary);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+.signup-form {
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.field-help {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.error-text {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.error {
+  border-color: var(--error-color) !important;
+}
+
+.checkbox-group {
+  margin: 2rem 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-right: 0.75rem;
+  margin-top: 0.2rem;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.checkbox-label a {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.form-actions {
+  text-align: center;
+}
+
+.submit-btn {
   width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
+  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+}
+
+.submit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.login-link {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.login-link a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+.status-message {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
 }
 
 .modal-content {
-  background-color: #fefefe;
-  margin: auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  max-width: 600px;
-  border-radius: 5px;
-}
-
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.close:hover {
-  color: #000;
-}
-
-/* Form styles */
-.form-group {
-  margin-bottom: 15px;
-}
-
-input[type=text],
-input[type=password],
-input[type=email] {
+  background-color: var(--background-primary);
+  border-radius: var(--border-radius);
+  max-width: 500px;
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  margin-top: 6px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.clearfix::after {
-  content: "";
-  clear: both;
-  display: table;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.cancelbtn, .signupbtn {
-  float: left;
-  width: 50%;
-  padding: 14px 20px;
+.modal-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.close-btn {
+  background: none;
   border: none;
+  font-size: 1.5rem;
   cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
 }
 
-.cancelbtn {
-  background-color: #f44336;
-  color: white;
+.close-btn:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
 }
 
-.signupbtn {
-  background-color: #2196F3;
-  color: white;
+.modal-body {
+  padding: 1.5rem;
 }
 
-.show-modal-btn {
-  background-color: #2196F3;
-  color: white;
-  padding: 14px 20px;
-  margin: 8px 0;
-  border: none;
+.modal-body ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.modal-body li {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .signup-form-container {
+    padding: 1.5rem;
+  }
+  
+  .signup-header {
+    margin-bottom: 2rem;
+  }
+  
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+}
+
+/* Loading state animation */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+}
+
+/* Focus states for accessibility */
+.signup-form input:focus,
+.signup-form textarea:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Custom checkbox styling */
+.checkbox-label input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color);
+  border-radius: 3px;
+  background-color: var(--background-primary);
   cursor: pointer;
-  width: auto;
-  border-radius: 4px;
+  position: relative;
+  transition: var(--transition);
 }
 
-hr {
-  border: 1px solid #f1f1f1;
-  margin-bottom: 25px;
+.checkbox-label input[type="checkbox"]:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.checkbox-label input[type="checkbox"]:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 </style>
