@@ -1,73 +1,63 @@
 <template>
   <div class="page-container">
     <!-- Header Section -->
-    <div class="news-header">
-      <h1>Latest News & Updates</h1>
-      <p class="news-description">
-        Stay informed with the latest developments, insights, and announcements from the Epictetus EE Team
-      </p>
-    </div>
+    <PageHeader
+      title="Latest News & Updates"
+      description="Stay informed with the latest developments, insights, and announcements from the Epictetus EE Team"
+      :breadcrumbs="breadcrumbs"
+      :showBreadcrumbs="true"
+    />
 
     <!-- Filter Section -->
-    <div class="news-filters">
-      <div class="filter-tabs">
-        <button 
-          v-for="category in categories" 
-          :key="category.id"
-          :class="['filter-tab', { active: activeCategory === category.id }]"
-          @click="activeCategory = category.id"
-        >
-          {{ category.name }}
-        </button>
-      </div>
-      <div class="search-box">
-        <input 
-          type="text" 
-          v-model="searchQuery"
-          placeholder="Search news..."
-          class="search-input"
-        >
-        <span class="search-icon">🔍</span>
-      </div>
-    </div>
+    <FilterSection
+      :categories="filterCategories"
+      :defaultCategory="'all'"
+      :showSearch="true"
+      searchPlaceholder="Search news..."
+      :showSort="true"
+      :sortOptions="sortOptions"
+      :showViewToggle="true"
+      @update:category="handleCategoryChange"
+      @update:search="handleSearchChange"
+      @update:sort="handleSortChange"
+      @update:view="handleViewChange"
+    />
 
     <!-- News Grid -->
-    <div class="news-grid">
-      <article 
-        v-for="article in filteredArticles" 
+    <div v-if="filteredArticles.length > 0" :class="['news-container', `news-container--${currentView}`]">
+      <NewsCard
+        v-for="article in filteredArticles"
         :key="article.id"
-        class="news-card"
-        @click="openArticle(article)"
-      >
-        <div class="news-image">
-          <img :src="article.image" :alt="article.title" />
-          <div class="news-category">{{ article.category }}</div>
-        </div>
-        <div class="news-content">
-          <div class="news-meta">
-            <span class="news-date">{{ formatDate(article.date) }}</span>
-            <span class="news-author">By {{ article.author }}</span>
-          </div>
-          <h3 class="news-title">{{ article.title }}</h3>
-          <p class="news-excerpt">{{ article.excerpt }}</p>
-          <div class="news-tags">
-            <span v-for="tag in article.tags" :key="tag" class="tag">
-              #{{ tag }}
-            </span>
-          </div>
-        </div>
-      </article>
+        :article="transformArticleData(article)"
+        :variant="currentView === 'list' ? 'compact' : 'default'"
+        :layout="currentView === 'list' ? 'horizontal' : 'vertical'"
+        :isArticleLiked="article.isLiked"
+        :isSaved="article.isSaved"
+        @read="handleArticleRead"
+        @save="handleArticleSave"
+        @unsave="handleArticleUnsave"
+        @like="handleArticleLike"
+        @unlike="handleArticleUnlike"
+        @share="handleArticleShare"
+        @view-source="handleViewSource"
+        @topic-click="handleTopicClick"
+      />
     </div>
 
     <!-- Load More Button -->
-    <div class="load-more-section" v-if="hasMoreArticles">
-      <button class="btn btn-secondary load-more-btn" @click="loadMore">
+    <div class="load-more-section" v-if="hasMoreArticles && filteredArticles.length > 0">
+      <AppButton
+        variant="outline"
+        size="large"
+        @click="loadMore"
+        :loading="loadingMore"
+      >
         Load More Articles
-      </button>
+      </AppButton>
     </div>
 
     <!-- Empty State -->
-    <div v-if="filteredArticles.length === 0" class="empty-state">
+    <div v-else class="empty-state">
       <div class="empty-icon">📰</div>
       <h3>No articles found</h3>
       <p>Try adjusting your search or filter criteria</p>
@@ -76,67 +66,101 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
+import PageHeader from '@/components/common/PageHeader.vue'
+import FilterSection from '@/components/common/FilterSection.vue'
+import NewsCard from '@/components/news/NewsCard.vue'
+import AppButton from '@/components/ui/AppButton.vue'
 
 // Reactive data
-const activeCategory = ref('all')
 const searchQuery = ref('')
+const selectedCategory = ref('all')
+const currentView = ref('grid')
+const currentSort = ref('')
 const hasMoreArticles = ref(true)
+const loadingMore = ref(false)
 
-// Categories for filtering
-const categories = ref([
-  { id: 'all', name: 'All News' },
-  { id: 'updates', name: 'Updates' },
-  { id: 'philosophy', name: 'Philosophy' },
-  { id: 'technology', name: 'Technology' },
-  { id: 'community', name: 'Community' }
+// Navigation breadcrumbs
+const breadcrumbs = ref([
+  { text: 'Home', to: '/' },
+  { text: 'News', to: '/news' }
 ])
 
-// Sample news articles (in a real app, this would come from an API)
+// Filter categories for FilterSection component
+const filterCategories = ref([
+  { value: 'all', label: 'All News', count: 6 },
+  { value: 'updates', label: 'Updates', count: 2 },
+  { value: 'philosophy', label: 'Philosophy', count: 2 },
+  { value: 'technology', label: 'Technology', count: 1 },
+  { value: 'community', label: 'Community', count: 1 }
+])
+
+// Sort options for FilterSection component
+const sortOptions = ref([
+  { value: 'date', label: 'Latest First' },
+  { value: 'title', label: 'Title A-Z' },
+  { value: 'author', label: 'Author A-Z' },
+  { value: 'views', label: 'Most Viewed' }
+])
+
+// Sample news articles
 const articles = ref([
   {
     id: 1,
     title: 'New Features Released: Enhanced User Experience',
-    excerpt: 'We are excited to announce several new features that will improve your experience with our platform, including better navigation and enhanced accessibility.',
-    content: 'Full article content would go here...',
-    author: 'Epictetus Team',
-    date: new Date('2025-08-10'),
-    category: 'Updates',
-    tags: ['features', 'ux', 'accessibility'],
-    image: '/vite.svg'
+    excerpt: 'We are excited to announce several new features that will improve your experience with our platform.',
+    author: 'Development Team',
+    category: 'updates',
+    date: '2025-08-10',
+    image: '/hmu.png',
+    tags: ['features', 'ui', 'accessibility'],
+    readingTime: '3 min',
+    views: 1250,
+    comments: 24,
+    shares: 15,
+    isLiked: false,
+    isSaved: false,
+    isBreaking: false,
+    isTrending: true,
+    topics: ['Product Updates', 'User Experience']
   },
   {
     id: 2,
-    title: 'Stoic Philosophy in Modern Technology',
-    excerpt: 'Exploring how ancient Stoic principles can guide modern technology development and create more mindful digital experiences.',
-    content: 'Full article content would go here...',
-    author: 'Marcus Aurelius',
-    date: new Date('2025-08-08'),
-    category: 'Philosophy',
-    tags: ['stoicism', 'technology', 'mindfulness'],
-    image: '/logo.jpg'
+    title: 'Stoic Philosophy in Modern Software Development',
+    excerpt: 'How ancient Stoic principles can guide modern developers in creating better software.',
+    author: 'Marcus Aurelius Jr.',
+    category: 'philosophy',
+    date: '2025-08-08',
+    image: '/logo.jpg',
+    tags: ['philosophy', 'development', 'productivity'],
+    readingTime: '8 min',
+    views: 892,
+    comments: 18,
+    shares: 32,
+    isLiked: true,
+    isSaved: true,
+    isBreaking: false,
+    isTrending: false,
+    topics: ['Philosophy', 'Programming', 'Mindfulness']
   },
   {
     id: 3,
-    title: 'Community Spotlight: User Success Stories',
-    excerpt: 'Celebrating our amazing community members and their inspiring journeys with Stoic principles and personal growth.',
-    content: 'Full article content would go here...',
-    author: 'Community Team',
-    date: new Date('2025-08-05'),
-    category: 'Community',
-    tags: ['community', 'success', 'inspiration'],
-    image: '/vite.svg'
-  },
-  {
-    id: 4,
-    title: 'Platform Updates: Performance Improvements',
-    excerpt: 'We have made significant performance improvements to ensure faster loading times and smoother user interactions across all devices.',
-    content: 'Full article content would go here...',
-    author: 'Development Team',
-    date: new Date('2025-08-03'),
-    category: 'Technology',
-    tags: ['performance', 'updates', 'optimization'],
-    image: '/logo.jpg'
+    title: 'Breaking: Major Platform Update Coming Soon',
+    excerpt: 'A major platform update is scheduled for next week, bringing significant improvements.',
+    author: 'Product Team',
+    category: 'updates',
+    date: '2025-08-05',
+    image: '/logo.jpg',
+    tags: ['breaking', 'update', 'platform'],
+    readingTime: '4 min',
+    views: 2100,
+    comments: 45,
+    shares: 67,
+    isLiked: false,
+    isSaved: true,
+    isBreaking: true,
+    isTrending: true,
+    topics: ['Product Updates', 'Performance']
   }
 ])
 
@@ -144,20 +168,16 @@ const articles = ref([
 const filteredArticles = computed(() => {
   let filtered = articles.value
 
-  // Filter by category
-  if (activeCategory.value !== 'all') {
-    filtered = filtered.filter(article => 
-      article.category.toLowerCase() === activeCategory.value
-    )
+  if (selectedCategory.value !== 'all') {
+    filtered = filtered.filter(article => article.category === selectedCategory.value)
   }
 
-  // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(article =>
       article.title.toLowerCase().includes(query) ||
       article.excerpt.toLowerCase().includes(query) ||
-      article.tags.some(tag => tag.toLowerCase().includes(query))
+      article.author.toLowerCase().includes(query)
     )
   }
 
@@ -165,232 +185,113 @@ const filteredArticles = computed(() => {
 })
 
 // Methods
-const formatDate = (date) => {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(date)
+const transformArticleData = (article) => {
+  return {
+    id: article.id,
+    title: article.title,
+    excerpt: article.excerpt,
+    author: article.author,
+    category: article.category,
+    publishedDate: article.date,
+    imageUrl: article.image,
+    tags: article.tags,
+    readingTime: article.readingTime,
+    views: article.views,
+    comments: article.comments,
+    shares: article.shares,
+    likes: Math.floor(Math.random() * 100),
+    isBreaking: article.isBreaking,
+    isTrending: article.isTrending,
+    topics: article.topics,
+    contentTypes: article.isBreaking ? ['breaking'] : []
+  }
 }
 
-const openArticle = (article) => {
-  // In a real app, this would navigate to a detailed article view
-  console.log('Opening article:', article.title)
-  // For now, just show an alert
-  alert(`Article: ${article.title}\n\n${article.excerpt}`)
+const handleCategoryChange = (category) => {
+  selectedCategory.value = category
 }
 
-const loadMore = () => {
-  // Simulate loading more articles
-  console.log('Loading more articles...')
+const handleSearchChange = (query) => {
+  searchQuery.value = query
+}
+
+const handleSortChange = (sortOption) => {
+  currentSort.value = sortOption
+}
+
+const handleViewChange = (view) => {
+  currentView.value = view
+}
+
+const handleArticleRead = (article) => {
+  console.log('Reading article:', article.title)
+}
+
+const handleArticleSave = (article) => {
+  console.log('Saved article:', article.title)
+}
+
+const handleArticleUnsave = (article) => {
+  console.log('Unsaved article:', article.title)
+}
+
+const handleArticleLike = (article) => {
+  console.log('Liked article:', article.title)
+}
+
+const handleArticleUnlike = (article) => {
+  console.log('Unliked article:', article.title)
+}
+
+const handleArticleShare = (shareData) => {
+  console.log('Sharing article:', shareData)
+}
+
+const handleViewSource = (article) => {
+  console.log('Viewing source for:', article.title)
+}
+
+const handleTopicClick = (topic) => {
+  console.log('Clicked topic:', topic)
+}
+
+const loadMore = async () => {
+  loadingMore.value = true
+  await new Promise(resolve => setTimeout(resolve, 1000))
   hasMoreArticles.value = false
+  loadingMore.value = false
 }
-
-onMounted(() => {
-  // Any initialization logic
-  console.log('NewsView mounted')
-})
 </script>
 
 <style scoped>
-/* Header Section */
-.news-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.news-description {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  max-width: 600px;
+.page-container {
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
-/* Filters Section */
-.news-filters {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  background-color: var(--background-primary);
-  padding: 1.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
+.news-container {
+  margin-top: 2rem;
 }
 
-.filter-tabs {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.filter-tab {
-  padding: 0.5rem 1rem;
-  border: 2px solid var(--border-color);
-  background-color: transparent;
-  color: var(--text-secondary);
-  border-radius: 50px;
-  cursor: pointer;
-  transition: var(--transition);
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.filter-tab:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-.filter-tab.active {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  color: white;
-}
-
-.search-box {
-  position: relative;
-  max-width: 300px;
-  width: 100%;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.75rem 2.5rem 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 50px;
-  font-size: 0.9rem;
-  transition: var(--transition);
-}
-
-.search-input:focus {
-  border-color: var(--primary-color);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-}
-
-.search-icon {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-/* News Grid */
-.news-grid {
+.news-container--grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 2rem;
-  margin-bottom: 3rem;
 }
 
-.news-card {
-  background-color: var(--background-primary);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: var(--transition);
-  cursor: pointer;
-  border: 1px solid var(--border-color);
-}
-
-.news-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.news-image {
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-}
-
-.news-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: var(--transition);
-}
-
-.news-card:hover .news-image img {
-  transform: scale(1.05);
-}
-
-.news-category {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background-color: var(--primary-color);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 50px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.news-content {
-  padding: 1.5rem;
-}
-
-.news-meta {
+.news-container--list {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.news-date {
-  font-weight: 500;
-}
-
-.news-author {
-  font-style: italic;
-}
-
-.news-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
-  line-height: 1.4;
-}
-
-.news-excerpt {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.news-tags {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.tag {
-  background-color: var(--background-secondary);
-  color: var(--text-secondary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-/* Load More Section */
 .load-more-section {
-  text-align: center;
-  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
 }
 
-.load-more-btn {
-  padding: 1rem 2rem;
-  font-size: 1rem;
-}
-
-/* Empty State */
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -400,58 +301,34 @@ onMounted(() => {
 .empty-icon {
   font-size: 4rem;
   margin-bottom: 1rem;
-  opacity: 0.5;
 }
 
 .empty-state h3 {
-  color: var(--text-primary);
+  font-size: 1.5rem;
   margin-bottom: 0.5rem;
+  color: var(--text-primary);
 }
 
-/* Responsive Design */
+.empty-state p {
+  font-size: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 @media (max-width: 768px) {
-  .news-filters {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
+  .page-container {
+    padding: 1rem;
   }
   
-  .filter-tabs {
-    justify-content: center;
-  }
-  
-  .search-box {
-    max-width: none;
-  }
-  
-  .news-grid {
+  .news-container--grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .news-card {
-    max-width: none;
-  }
-  
-  .news-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+    gap: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .filter-tabs {
-    justify-content: flex-start;
-  }
-  
-  .filter-tab {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-  }
-  
-  .news-content {
-    padding: 1rem;
+  .page-container {
+    padding: 0.5rem;
   }
 }
 </style>
