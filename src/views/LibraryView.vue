@@ -1,110 +1,154 @@
 <template>
   <div class="page-container">
     <!-- Header Section -->
-    <div class="library-header">
-      <h1>Philosophy Library</h1>
-      <p class="library-description">
-        Explore our curated collection of Stoic philosophy texts, modern interpretations, and philosophical works
-      </p>
-    </div>
+    <PageHeader
+      title="Philosophy Library"
+      description="Explore our curated collection of Stoic philosophy texts, modern interpretations, and philosophical works"
+      :breadcrumbs="breadcrumbs"
+      :showBreadcrumbs="true"
+    />
 
     <!-- Filter Section -->
-    <div class="library-filters">
-      <div class="filter-tabs">
-        <button 
-          v-for="category in categories" 
-          :key="category"
-          :class="['filter-tab', { active: selectedCategory === category }]"
-          @click="selectedCategory = category"
-        >
-          {{ category }}
-        </button>
-      </div>
-      <div class="search-box">
-        <input 
-          type="text" 
-          v-model="searchQuery"
-          placeholder="Search books..."
-          class="search-input"
-        >
-        <span class="search-icon">🔍</span>
-      </div>
-    </div>
-
+    <FilterSection
+      :categories="filterCategories"
+      :defaultCategory="'all'"
+      :showSearch="true"
+      searchPlaceholder="Search books..."
+      :showSort="true"
+      :sortOptions="sortOptions"
+      :showViewToggle="true"
+      @update:category="handleCategoryChange"
+      @update:search="handleSearchChange"
+      @update:sort="handleSortChange"
+      @update:view="handleViewChange"
+    />
+    
     <!-- Books Grid -->
-    <div class="book-grid">
-      <div 
-        v-for="book in filteredBooks" 
+    <div v-if="filteredBooks.length > 0" :class="['books-container', `books-container--${currentView}`]">
+      <BookCard
+        v-for="book in filteredBooks"
         :key="book.id"
-        class="book-card"
-        @click="openModal(book)"
-      >
-        <div class="book-cover">
-          <img :src="book.cover" :alt="book.title" />
-        </div>
-        <div class="book-info">
-          <h3>{{ book.title }}</h3>
-          <p class="author">{{ book.author }}</p>
-          <span class="category">{{ book.category }}</span>
-          <p class="book-excerpt">{{ book.description }}</p>
-          <div class="book-meta">
-            <span class="book-year">{{ book.year }}</span>
-            <div class="book-rating">
-              <span class="stars">★★★★★</span>
-              <span>{{ book.rating }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        :book="transformBookData(book)"
+        :variant="currentView === 'list' ? 'compact' : 'default'"
+        :layout="currentView === 'list' ? 'horizontal' : 'vertical'"
+        :isBookLiked="book.isFavorite"
+        :isFavorite="book.isFavorite"
+        @read="handleBookRead"
+        @download="handleBookDownload"
+        @favorite="handleBookFavorite"
+        @unfavorite="handleBookUnfavorite"
+        @like="handleBookLike"
+        @unlike="handleBookUnlike"
+        @share="handleBookShare"
+      />
     </div>
 
     <!-- Empty State -->
-    <div v-if="filteredBooks.length === 0" class="empty-state">
+    <div v-else class="empty-state">
       <div class="empty-icon">📚</div>
       <h3>No books found</h3>
       <p>Try adjusting your search or filter criteria</p>
     </div>
 
-    <!-- Modal -->
-    <div v-if="selectedBook" class="book-modal" @click.self="closeModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>{{ selectedBook.title }}</h2>
-          <button class="close" @click="closeModal">&times;</button>
+    <!-- Book Detail Modal -->
+    <AppModal
+      v-if="selectedBook"
+      :isOpen="!!selectedBook"
+      @close="closeModal"
+      title="Book Details"
+      size="large"
+    >
+      <div class="book-detail-modal">
+        <div class="book-cover-large">
+          <img :src="selectedBook.cover" :alt="selectedBook.title" />
         </div>
-        <div class="book-detail">
-          <div class="book-cover">
-            <img :src="selectedBook.cover" :alt="selectedBook.title" />
-          </div>
-          <div class="book-info-detail">
-            <p class="author">{{ selectedBook.author }}</p>
-            <span class="category">{{ selectedBook.category }}</span>
-            <p class="description">{{ selectedBook.description }}</p>
-            <div class="action-buttons">
-              <a :href="selectedBook.downloadUrl" class="download-btn">
-                📥 Download
-              </a>
-              <button class="favorite-btn" @click="toggleFavorite(selectedBook)">
-                ❤️ {{ selectedBook.isFavorite ? 'Remove from' : 'Add to' }} Favorites
-              </button>
+        <div class="book-info-detail">
+          <h2>{{ selectedBook.title }}</h2>
+          <p class="author">By {{ selectedBook.author }}</p>
+          <span class="category-badge">{{ selectedBook.category }}</span>
+          <p class="description">{{ selectedBook.description }}</p>
+          
+          <div class="book-stats">
+            <div class="stat">
+              <span class="label">Published:</span>
+              <span class="value">{{ selectedBook.year }}</span>
             </div>
+            <div class="stat">
+              <span class="label">Rating:</span>
+              <span class="value">⭐ {{ selectedBook.rating }}/5</span>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <AppButton
+              variant="solid"
+              size="medium"
+              @click="handleBookRead(selectedBook)"
+            >
+              📖 Read Now
+            </AppButton>
+            <AppButton
+              variant="outline"
+              size="medium"
+              @click="handleBookDownload(selectedBook)"
+            >
+              📥 Download
+            </AppButton>
+            <AppButton
+              :variant="selectedBook.isFavorite ? 'solid' : 'outline'"
+              size="medium"
+              @click="toggleFavorite(selectedBook)"
+            >
+              {{ selectedBook.isFavorite ? '❤️ Favorited' : '🤍 Add to Favorites' }}
+            </AppButton>
           </div>
         </div>
       </div>
-    </div>
+    </AppModal>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
+import PageHeader from '@/components/common/PageHeader.vue'
+import FilterSection from '@/components/common/FilterSection.vue'
+import BookCard from '@/components/library/BookCard.vue'
+import AppModal from '@/components/ui/AppModal.vue'
+import AppButton from '@/components/ui/AppButton.vue'
 
 // Reactive data
 const searchQuery = ref('')
-const selectedCategory = ref('All')
+const selectedCategory = ref('all')
 const selectedBook = ref(null)
+const currentView = ref('grid')
+const currentSort = ref('')
 
-// Categories for filtering
-const categories = ref(['All', 'Stoicism', 'Philosophy', 'Self-Help', 'Ancient Texts', 'Modern'])
+// Debug: Log to console to verify script is running
+console.log('LibraryView component loaded!')
+console.log('Initial selectedCategory:', selectedCategory.value)
+
+// Navigation breadcrumbs
+const breadcrumbs = ref([
+  { text: 'Home', to: '/' },
+  { text: 'Library', to: '/library' }
+])
+
+// Filter categories for FilterSection component
+const filterCategories = ref([
+  { value: 'all', label: 'All Books', count: 6 },
+  { value: 'stoicism', label: 'Stoicism', count: 3 },
+  { value: 'philosophy', label: 'Philosophy', count: 1 },
+  { value: 'self-help', label: 'Self-Help', count: 1 },
+  { value: 'modern', label: 'Modern', count: 1 }
+])
+
+// Sort options for FilterSection component
+const sortOptions = ref([
+  { value: 'title', label: 'Title A-Z' },
+  { value: 'author', label: 'Author A-Z' },
+  { value: 'year', label: 'Publication Year' },
+  { value: 'rating', label: 'Highest Rated' }
+])
 
 // Sample books data (in a real app, this would come from an API)
 const books = ref([
@@ -187,8 +231,10 @@ const filteredBooks = computed(() => {
   let filtered = books.value
 
   // Filter by category
-  if (selectedCategory.value !== 'All') {
-    filtered = filtered.filter(book => book.category === selectedCategory.value)
+  if (selectedCategory.value !== 'all') {
+    filtered = filtered.filter(book => 
+      book.category.toLowerCase() === selectedCategory.value.toLowerCase()
+    )
   }
 
   // Filter by search query
@@ -202,241 +248,192 @@ const filteredBooks = computed(() => {
     )
   }
 
+  // Sort by selected option
+  if (currentSort.value) {
+    filtered = [...filtered].sort((a, b) => {
+      switch (currentSort.value) {
+        case 'title':
+          return a.title.localeCompare(b.title)
+        case 'author':
+          return a.author.localeCompare(b.author)
+        case 'year':
+          return new Date(b.year).getTime() - new Date(a.year).getTime()
+        case 'rating':
+          return b.rating - a.rating
+        default:
+          return 0
+      }
+    })
+  }
+
   return filtered
 })
 
 // Methods
+const transformBookData = (book) => {
+  return {
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    description: book.description,
+    category: book.category,
+    publishedDate: book.year,
+    rating: book.rating,
+    coverUrl: book.cover,
+    tags: [book.category],
+    pageCount: Math.floor(Math.random() * 500) + 100, // Mock data
+    language: 'English',
+    readingTime: `${Math.floor(Math.random() * 10) + 5} hours`,
+    status: 'available'
+  }
+}
+
+const handleCategoryChange = (category) => {
+  selectedCategory.value = category
+}
+
+const handleSearchChange = (query) => {
+  searchQuery.value = query
+}
+
+const handleSortChange = (sortOption) => {
+  currentSort.value = sortOption
+}
+
+const handleViewChange = (view) => {
+  currentView.value = view
+}
+
+const handleBookRead = (book) => {
+  console.log('Reading book:', book.title)
+  // Implement book reading logic
+}
+
+const handleBookDownload = (book) => {
+  console.log('Downloading book:', book.title)
+  // Implement book download logic
+  if (book.downloadUrl && book.downloadUrl !== '#') {
+    window.open(book.downloadUrl, '_blank')
+  }
+}
+
+const handleBookFavorite = (book) => {
+  const bookIndex = books.value.findIndex(b => b.id === book.id)
+  if (bookIndex !== -1) {
+    books.value[bookIndex].isFavorite = true
+  }
+}
+
+const handleBookUnfavorite = (book) => {
+  const bookIndex = books.value.findIndex(b => b.id === book.id)
+  if (bookIndex !== -1) {
+    books.value[bookIndex].isFavorite = false
+  }
+}
+
+const handleBookLike = (book) => {
+  console.log('Liked book:', book.title)
+  // Implement like logic
+}
+
+const handleBookUnlike = (book) => {
+  console.log('Unliked book:', book.title)
+  // Implement unlike logic
+}
+
+const handleBookShare = (shareData) => {
+  console.log('Sharing book:', shareData)
+  // Implement share logic
+  if (navigator.share) {
+    navigator.share({
+      title: shareData.title,
+      text: shareData.description,
+      url: window.location.href
+    })
+  }
+}
+
 const openModal = (book) => {
   selectedBook.value = book
-  // Prevent body scroll when modal is open
-  document.body.style.overflow = 'hidden'
 }
 
 const closeModal = () => {
   selectedBook.value = null
-  // Restore body scroll
-  document.body.style.overflow = 'auto'
 }
 
 const toggleFavorite = (book) => {
-  book.isFavorite = !book.isFavorite
-  // In a real app, this would make an API call to update the favorite status
-  console.log(`${book.title} ${book.isFavorite ? 'added to' : 'removed from'} favorites`)
+  const bookIndex = books.value.findIndex(b => b.id === book.id)
+  if (bookIndex !== -1) {
+    books.value[bookIndex].isFavorite = !books.value[bookIndex].isFavorite
+  }
 }
-
-// Lifecycle hooks
-onMounted(() => {
-  console.log('LibraryView mounted with', books.value.length, 'books')
-})
-
-// Clean up when component is unmounted
-onUnmounted(() => {
-  document.body.style.overflow = 'auto'
-})
 </script>
 
 <style scoped>
-.library {
+.page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 2rem;
 }
 
-.search-bar {
-  margin-bottom: 20px;
+/* Books Container */
+.books-container {
+  margin-top: 2rem;
 }
 
-.search-bar input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.filter-bar {
-  margin-bottom: 20px;
-}
-
-.filter-bar select {
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-}
-
-.book-grid {
+.books-container--grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
-  margin-bottom: 3rem;
 }
 
-.book-card {
-  background-color: var(--background-primary);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: var(--transition);
-  cursor: pointer;
-  border: 1px solid var(--border-color);
-}
-
-.book-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.book-cover {
-  height: 220px;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+.books-container--list {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.book-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: var(--transition);
-}
-
-.book-card:hover .book-cover img {
-  transform: scale(1.05);
-}
-
-.book-info {
-  padding: 1.5rem;
-}
-
-.book-info h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
-  line-height: 1.4;
-}
-
-.author {
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
   color: var(--text-secondary);
-  margin-bottom: 1rem;
-  font-style: italic;
-  font-size: 0.9rem;
 }
 
-.category {
-  background-color: var(--accent-color);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 50px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: inline-block;
+.empty-icon {
+  font-size: 4rem;
   margin-bottom: 1rem;
 }
 
-/* Book excerpt with line clamping */
-.book-excerpt {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Book metadata */
-.book-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-color);
-  padding-top: 1rem;
-}
-
-.book-rating {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.stars {
-  color: #ffa726;
-}
-
-/* Modal Styles */
-.book-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-content {
-  background-color: var(--background-primary);
-  border-radius: var(--border-radius);
-  max-width: 800px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-color);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.close {
-  background: none;
-  border: none;
+.empty-state h3 {
   font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-secondary);
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: var(--transition);
-}
-
-.close:hover {
-  background-color: var(--border-color);
+  margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
 
-.book-detail {
+.empty-state p {
+  font-size: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Book Detail Modal */
+.book-detail-modal {
   display: flex;
   gap: 2rem;
-  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.book-cover-large {
+  flex: 0 0 250px;
+}
+
+.book-cover-large img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
 }
 
 .book-info-detail {
@@ -444,99 +441,110 @@ onUnmounted(() => {
 }
 
 .book-info-detail h2 {
-  color: var(--text-primary);
+  font-size: 1.75rem;
   margin-bottom: 0.5rem;
+  color: var(--text-primary);
 }
 
 .book-info-detail .author {
-  margin-bottom: 1rem;
-  font-size: 1rem;
-}
-
-.book-info-detail .category {
-  margin-bottom: 1.5rem;
-}
-
-.description {
+  font-size: 1.125rem;
   color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
-.action-buttons {
+.category-badge {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.book-info-detail .description {
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+.book-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: var(--background-secondary);
+  border-radius: var(--border-radius);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat .label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat .value {
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.modal-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.download-btn,
-.favorite-btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: var(--transition);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.download-btn {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-.download-btn:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-.favorite-btn {
-  background-color: var(--error-color);
-  color: white;
-}
-
-.favorite-btn:hover {
-  background-color: #d32f2f;
-  transform: translateY(-1px);
-}
-
-/* Responsive Design */
+/* Responsive design */
 @media (max-width: 768px) {
-  .book-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
+  .page-container {
+    padding: 1rem;
   }
   
-  .book-detail {
+  .books-container--grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .book-detail-modal {
     flex-direction: column;
     gap: 1rem;
   }
   
-  .action-buttons {
-    justify-content: center;
+  .book-cover-large {
+    flex: none;
+    max-width: 200px;
+    margin: 0 auto;
   }
   
-  .modal-content {
-    margin: 0.5rem;
-    max-height: calc(100vh - 1rem);
+  .book-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
   }
 }
 
 @media (max-width: 480px) {
-  .book-info {
+  .page-container {
+    padding: 0.5rem;
+  }
+  
+  .book-detail-modal {
     padding: 1rem;
   }
   
-  .book-detail {
-    padding: 1rem;
-  }
-  
-  .modal-header {
-    padding: 1rem;
+  .book-info-detail h2 {
+    font-size: 1.5rem;
   }
 }
 </style>
