@@ -1,10 +1,18 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import AppNavigation from '@/components/common/AppNavigation.vue'
 
-const router = useRouter()
 const isLoading = ref(true)
-const isMobileMenuOpen = ref(false)
+
+// Navigation configuration for the AppNavigation component
+const navigationItems = [
+  { name: 'Home', path: '/', icon: '🏠' },
+  { name: 'Library', path: '/library', icon: '📚' },
+  { name: 'News', path: '/news', icon: '📰' },
+  { name: 'Contact', path: '/contact', icon: '📧' },
+  { name: 'Sign Up', path: '/signup', icon: '✍️' },
+  { name: 'Login', path: '/login', icon: '🔑' }
+]
 
 onMounted(() => {
   // Simulate app initialization
@@ -12,10 +20,6 @@ onMounted(() => {
     isLoading.value = false
   }, 500)
 })
-
-const toggleMobileMenu = () => {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
 </script>
 
 <template>
@@ -29,80 +33,15 @@ const toggleMobileMenu = () => {
     <!-- Main app -->
     <template v-else>
       <header>
-        <nav class="topnav" role="navigation" aria-label="Main navigation">
-          <router-link to="/" class="logo-link" aria-label="Home page">
-            <img src="/hmu.png" width="60" height="40" alt="HMU logo" />
-          </router-link>
-          
-          <div class="nav-links">
-            <router-link to="/" class="nav-item" aria-label="Home page">
-              <span class="nav-icon">🏠</span>
-              <span class="nav-text">Home</span>
-            </router-link>
-            <router-link to="/library" class="nav-item" aria-label="E-Library page">
-              <span class="nav-icon">📚</span>
-              <span class="nav-text">Library</span>
-            </router-link>
-            <router-link to="/news" class="nav-item" aria-label="News page">
-              <span class="nav-icon">📰</span>
-              <span class="nav-text">News</span>
-            </router-link>
-            <router-link to="/contact" class="nav-item" aria-label="Contact page">
-              <span class="nav-icon">📧</span>
-              <span class="nav-text">Contact</span>
-            </router-link>
-            <router-link to="/signup" class="nav-item" aria-label="Sign up page">
-              <span class="nav-icon">✍️</span>
-              <span class="nav-text">Sign Up</span>
-            </router-link>
-            <router-link to="/login" class="nav-item" aria-label="Login page">
-              <span class="nav-icon">🔑</span>
-              <span class="nav-text">Login</span>
-            </router-link>
-          </div>
-
-          <!-- Mobile menu toggle -->
-          <button 
-            class="mobile-menu-toggle" 
-            @click="toggleMobileMenu" 
-            :class="{ active: isMobileMenuOpen }"
-            aria-label="Toggle mobile menu"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-        </nav>
-
-        <!-- Mobile menu overlay -->
-        <div v-if="isMobileMenuOpen" class="mobile-menu-overlay" @click="toggleMobileMenu">
-          <div class="mobile-menu" @click.stop>
-            <router-link to="/" class="mobile-nav-item" @click="toggleMobileMenu">
-              <span class="nav-icon">🏠</span>
-              <span class="nav-text">Home</span>
-            </router-link>
-            <router-link to="/library" class="mobile-nav-item" @click="toggleMobileMenu">
-              <span class="nav-icon">📚</span>
-              <span class="nav-text">Library</span>
-            </router-link>
-            <router-link to="/news" class="mobile-nav-item" @click="toggleMobileMenu">
-              <span class="nav-icon">📰</span>
-              <span class="nav-text">News</span>
-            </router-link>
-            <router-link to="/contact" class="mobile-nav-item" @click="toggleMobileMenu">
-              <span class="nav-icon">📧</span>
-              <span class="nav-text">Contact</span>
-            </router-link>
-            <router-link to="/signup" class="mobile-nav-item" @click="toggleMobileMenu">
-              <span class="nav-icon">✍️</span>
-              <span class="nav-text">Sign Up</span>
-            </router-link>
-            <router-link to="/login" class="mobile-nav-item" @click="toggleMobileMenu">
-              <span class="nav-icon">🔑</span>
-              <span class="nav-text">Login</span>
-            </router-link>
-          </div>
-        </div>
+        <AppNavigation
+          :navigation="navigationItems"
+          logoSrc="/hmu.png"
+          brandName="Epictetus"
+          :showLogo="true"
+          variant="horizontal"
+          position="top"
+          :sticky="true"
+        />
       </header>
       
       <main role="main">

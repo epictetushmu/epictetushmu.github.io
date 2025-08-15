@@ -5,8 +5,8 @@
       <h2>Oops! Something went wrong</h2>
       <p class="error-message">{{ errorMessage }}</p>
       <div class="error-actions">
-        <button @click="retry" class="btn btn-primary">Try Again</button>
-        <router-link to="/" class="btn btn-secondary">Go Home</router-link>
+        <AppButton @click="retry" variant="primary">Try Again</AppButton>
+        <AppButton @click="goHome" variant="outline">Go Home</AppButton>
       </div>
     </div>
   </div>
@@ -14,6 +14,10 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import AppButton from '@/components/ui/AppButton.vue'
+
+const router = useRouter()
 
 const props = defineProps({
   error: {
@@ -27,6 +31,10 @@ const emit = defineEmits(['retry'])
 const errorMessage = ref(
   props.error?.message || 'An unexpected error occurred. Please try again.'
 )
+
+const goHome = () => {
+  router.push('/')
+}
 
 const retry = () => {
   emit('retry')
