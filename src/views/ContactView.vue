@@ -87,7 +87,7 @@
             class="btn btn-primary submit-btn"
             :disabled="isSubmitting"
           >
-            <span v-if="isSubmitting" class="loading-spinner"></span>
+            <LoadingSpinner v-if="isSubmitting" size="small" color="white" />
             {{ isSubmitting ? 'Sending...' : 'Send Message' }}
           </button>
         </form>
@@ -108,6 +108,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useEmailJS } from '../composables/useEmailJS.js'
+import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const { sendEmail } = useEmailJS()
 
@@ -341,11 +342,5 @@ const submitForm = async () => {
 .contact-form textarea:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
-}
-
-/* Loading state animation */
-.loading-spinner {
-  width: 16px;
-  height: 16px;
 }
 </style>

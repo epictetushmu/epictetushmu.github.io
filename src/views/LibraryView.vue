@@ -115,6 +115,7 @@ import FilterSection from '@/components/common/FilterSection.vue'
 import BookCard from '@/components/library/BookCard.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import { useBreadcrumbs } from '@/composables/useBreadcrumbs.js'
 
 // Reactive data
 const searchQuery = ref('')
@@ -123,15 +124,8 @@ const selectedBook = ref(null)
 const currentView = ref('grid')
 const currentSort = ref('')
 
-// Debug: Log to console to verify script is running
-console.log('LibraryView component loaded!')
-console.log('Initial selectedCategory:', selectedCategory.value)
-
 // Navigation breadcrumbs
-const breadcrumbs = ref([
-  { text: 'Home', to: '/' },
-  { text: 'Library', to: '/library' }
-])
+const { breadcrumbs } = useBreadcrumbs('Library')
 
 // Filter categories for FilterSection component
 const filterCategories = ref([
@@ -305,16 +299,11 @@ const handleViewChange = (view) => {
 }
 
 const handleBookRead = (book) => {
-  console.log('Reading book:', book.title)
-  // Implement book reading logic
+  // Handle book reading logic here
 }
 
 const handleBookDownload = (book) => {
-  console.log('Downloading book:', book.title)
-  // Implement book download logic
-  if (book.downloadUrl && book.downloadUrl !== '#') {
-    window.open(book.downloadUrl, '_blank')
-  }
+  // Handle book download logic here
 }
 
 const handleBookFavorite = (book) => {
@@ -337,12 +326,10 @@ const handleBookLike = (book) => {
 }
 
 const handleBookUnlike = (book) => {
-  console.log('Unliked book:', book.title)
   // Implement unlike logic
 }
 
 const handleBookShare = (shareData) => {
-  console.log('Sharing book:', shareData)
   // Implement share logic
   if (navigator.share) {
     navigator.share({

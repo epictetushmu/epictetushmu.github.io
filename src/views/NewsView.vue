@@ -71,6 +71,7 @@ import PageHeader from '@/components/common/PageHeader.vue'
 import FilterSection from '@/components/common/FilterSection.vue'
 import NewsCard from '@/components/news/NewsCard.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import { useBreadcrumbs } from '@/composables/useBreadcrumbs.js'
 
 // Reactive data
 const searchQuery = ref('')
@@ -81,10 +82,7 @@ const hasMoreArticles = ref(true)
 const loadingMore = ref(false)
 
 // Navigation breadcrumbs
-const breadcrumbs = ref([
-  { text: 'Home', to: '/' },
-  { text: 'News', to: '/news' }
-])
+const { breadcrumbs } = useBreadcrumbs('News')
 
 // Filter categories for FilterSection component
 const filterCategories = ref([
@@ -224,35 +222,35 @@ const handleViewChange = (view) => {
 }
 
 const handleArticleRead = (article) => {
-  console.log('Reading article:', article.title)
+  // Handle article reading logic
 }
 
 const handleArticleSave = (article) => {
-  console.log('Saved article:', article.title)
+  // Handle article save logic
 }
 
 const handleArticleUnsave = (article) => {
-  console.log('Unsaved article:', article.title)
+  // Handle article unsave logic
 }
 
 const handleArticleLike = (article) => {
-  console.log('Liked article:', article.title)
+  // Handle article like logic
 }
 
 const handleArticleUnlike = (article) => {
-  console.log('Unliked article:', article.title)
+  // Handle article unlike logic
 }
 
 const handleArticleShare = (shareData) => {
-  console.log('Sharing article:', shareData)
+  // Handle article sharing logic
 }
 
 const handleViewSource = (article) => {
-  console.log('Viewing source for:', article.title)
+  // Handle view source logic
 }
 
 const handleTopicClick = (topic) => {
-  console.log('Clicked topic:', topic)
+  // Handle topic click logic
 }
 
 const loadMore = async () => {

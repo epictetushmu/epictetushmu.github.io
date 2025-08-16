@@ -125,7 +125,7 @@
             class="btn btn-primary submit-btn"
             :disabled="!canSubmit || isSubmitting"
           >
-            <span v-if="isSubmitting" class="loading-spinner"></span>
+            <LoadingSpinner v-if="isSubmitting" size="small" color="white" />
             {{ isSubmitting ? 'Creating Account...' : 'Create Account' }}
           </button>
           
@@ -189,6 +189,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
 
@@ -527,12 +528,6 @@ const submitForm = async () => {
   .modal-body {
     padding: 1rem;
   }
-}
-
-/* Loading state animation */
-.loading-spinner {
-  width: 16px;
-  height: 16px;
 }
 
 /* Focus states for accessibility */
