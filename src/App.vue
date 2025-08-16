@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import TopNavbar from '@/components/common/TopNavbar.vue'
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 
 const isLoading = ref(true)
 
@@ -26,7 +27,7 @@ onMounted(() => {
   <div id="app">
     <!-- Loading screen -->
     <div v-if="isLoading" class="loading-screen">
-      <div class="loading-spinner"></div>
+      <LoadingSpinner size="large" />
       <p>Loading Epictetus...</p>
     </div>
     
