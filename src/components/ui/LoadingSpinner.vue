@@ -27,7 +27,6 @@ const props = defineProps({
 })
 
 const spinnerClasses = computed(() => [
-  'loading-spinner',
   `loading-spinner--${props.size}`,
   `loading-spinner--${props.color}`
 ])
