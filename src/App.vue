@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import AppNavigation from '@/components/common/AppNavigation.vue'
+import TopNavbar from '@/components/common/TopNavbar.vue'
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 
 const isLoading = ref(true)
 
-// Navigation configuration for the AppNavigation component
+// Navigation configuration for the TopNavbar component
 const navigationItems = [
   { name: 'Home', path: '/', icon: '🏠' },
   { name: 'Library', path: '/library', icon: '📚' },
@@ -26,21 +27,19 @@ onMounted(() => {
   <div id="app">
     <!-- Loading screen -->
     <div v-if="isLoading" class="loading-screen">
-      <div class="loading-spinner"></div>
+      <LoadingSpinner size="large" />
       <p>Loading Epictetus...</p>
     </div>
     
     <!-- Main app -->
     <template v-else>
       <header>
-        <AppNavigation
-          :navigation="navigationItems"
+        <TopNavbar
+          :navigationItems="navigationItems"
           logoSrc="/hmu.png"
           brandName="Epictetus"
-          :showLogo="true"
-          variant="horizontal"
-          position="top"
           :sticky="true"
+          variant="default"
         />
       </header>
       

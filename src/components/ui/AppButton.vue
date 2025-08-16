@@ -6,7 +6,7 @@
     v-bind="$attrs"
     @click="handleClick"
   >
-    <span v-if="loading" class="loading-spinner"></span>
+    <LoadingSpinner v-if="loading" size="small" color="white" />
     <span v-if="icon && !loading" class="icon">{{ icon }}</span>
     <span class="button-text"><slot /></span>
   </component>
@@ -14,6 +14,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import LoadingSpinner from './LoadingSpinner.vue'
 
 const props = defineProps({
   variant: {
@@ -182,21 +183,6 @@ const handleClick = (event) => {
 /* Icon and text spacing */
 .icon {
   font-size: 1.2em;
-}
-
-.loading-spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Focus states */
