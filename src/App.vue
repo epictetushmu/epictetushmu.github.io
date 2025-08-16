@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import AppNavigation from '@/components/common/AppNavigation.vue'
+import TopNavbar from '@/components/common/TopNavbar.vue'
 
 const isLoading = ref(true)
 
-// Navigation configuration for the AppNavigation component
+// Navigation configuration for the TopNavbar component
 const navigationItems = [
   { name: 'Home', path: '/', icon: '🏠' },
   { name: 'Library', path: '/library', icon: '📚' },
@@ -33,14 +33,12 @@ onMounted(() => {
     <!-- Main app -->
     <template v-else>
       <header>
-        <AppNavigation
-          :navigation="navigationItems"
+        <TopNavbar
+          :navigationItems="navigationItems"
           logoSrc="/hmu.png"
           brandName="Epictetus"
-          :showLogo="true"
-          variant="horizontal"
-          position="top"
           :sticky="true"
+          variant="default"
         />
       </header>
       
