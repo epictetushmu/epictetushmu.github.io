@@ -10,12 +10,12 @@
     <div class="login-form-container">
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="username">Username or Email *</label>
+          <label for="email">Email Address *</label>
           <input 
-            type="text" 
-            id="username" 
-            v-model="credentials.username" 
-            placeholder="Enter your username or email"
+            type="email" 
+            id="email" 
+            v-model="credentials.email" 
+            placeholder="Enter your email address"
             required
             :disabled="isSubmitting"
             autocomplete="username"
@@ -120,12 +120,14 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const credentials = reactive({
-  username: '',
+  email: '',
   password: '',
   rememberMe: false
 })
@@ -145,7 +147,7 @@ onMounted(() => {
 })
 
 const canSubmit = computed(() => {
-  return credentials.username.trim() && credentials.password.trim()
+  return credentials.email.trim() && credentials.password.trim()
 })
 
 const showMessage = (text, type) => {
@@ -160,7 +162,7 @@ const showMessage = (text, type) => {
 }
 
 const resetForm = () => {
-  credentials.username = ''
+  credentials.email = ''
   credentials.password = ''
   credentials.rememberMe = false
 }
@@ -172,42 +174,27 @@ const handleLogin = async () => {
   statusMessage.text = ''
   
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // In a real app, this would call an authentication API
-    console.log('Login attempt:', { 
-      username: credentials.username, 
-      password: '***',
-      rememberMe: credentials.rememberMe 
+    const success = await authStore.login({
+      email: credentials.email,
+      password: credentials.password
     })
     
-    // Simulate successful login
-    if (credentials.username === 'demo' && credentials.password === 'demo123') {
+    if (success) {
       showMessage('Login successful! Welcome back.', 'success')
-      
-      // Simulate storing authentication token
-      localStorage.setItem('auth_token', 'demo_token_' + Date.now())
-      localStorage.setItem('user_info', JSON.stringify({
-        username: credentials.username,
-        loginTime: new Date().toISOString()
-      }))
       
       // Reset form
       resetForm()
       
-      // Redirect to home after a delay
+      // Redirect to admin panel
       setTimeout(() => {
-        router.push('/')
-      }, 1500)
-      
+        router.push('/admin')
+      }, 1000)
     } else {
-      showMessage('Invalid username or password. Try demo/demo123 for testing.', 'error')
+      showMessage('Invalid email or password. Please try again.', 'error')
     }
-    
   } catch (error) {
-    console.error('Login failed:', error)
-    showMessage('Login failed. Please try again later.', 'error')
+    console.error('Login error:', error)
+    showMessage('Login failed. Please try again.', 'error')
   } finally {
     isSubmitting.value = false
   }
