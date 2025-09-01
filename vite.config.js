@@ -5,7 +5,7 @@ import { resolve } from 'path'
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
   plugins: [vue()],
-  base: command === 'build' ? '/epictetus/' : '/',  // Use /epictetus/ for production, / for dev
+  base: '/',  // Use / for epictetushmu.github.io (user/org pages)
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
