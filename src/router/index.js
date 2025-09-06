@@ -118,8 +118,6 @@ router.beforeEach((to, from, next) => {
   } else {
     next()
   }
-  // Add loading state or authentication checks here if needed
-  next()
 })
 
 router.afterEach((to, from) => {
