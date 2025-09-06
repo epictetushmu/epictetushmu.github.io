@@ -10,6 +10,7 @@ const navigationItems = [
   { name: 'Home', path: '/', icon: '🏠' },
   { name: 'Library', path: '/library', icon: '📚' },
   { name: 'News', path: '/news', icon: '📰' },
+  { name: 'Chaniathon', path: 'https://epictetushmu.github.io/Chaniathon/', icon: '💻', external: true },
   { name: 'Contact', path: '/contact', icon: '📧' },
   { name: 'Sign Up', path: '/signup', icon: '✍️' },
   { name: 'Login', path: '/login', icon: '🔑' }
