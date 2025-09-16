@@ -5,7 +5,7 @@ import { resolve } from 'path'
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
   plugins: [vue()],
-  base: '/',  // Use / for epictetushmu.github.io (user/org pages)
+  base: '/epictetushmu.github.io/',  // Use repository name for GitHub Pages
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
