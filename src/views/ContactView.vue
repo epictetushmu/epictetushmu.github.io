@@ -29,57 +29,81 @@
         <h2>Send us a Message</h2>
         <form @submit.prevent="submitForm" ref="contactForm" class="contact-form">
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group" :class="{ 'error': errors.firstName?.length }">
               <label for="fname">First Name *</label>
               <input 
                 type="text" 
                 id="fname" 
                 name="from_name"
-                v-model="form.firstName" 
+                :value="form.firstName"
+                @input="handleFieldInput('firstName', $event)"
+                @blur="handleFieldBlur('firstName')"
                 placeholder="Your first name" 
                 required
                 :disabled="isSubmitting"
+                :aria-invalid="errors.firstName?.length ? 'true' : 'false'"
               >
+              <div v-if="errors.firstName?.length" class="error-message" role="alert">
+                {{ errors.firstName[0] }}
+              </div>
             </div>
             
-            <div class="form-group">
+            <div class="form-group" :class="{ 'error': errors.lastName?.length }">
               <label for="lname">Last Name *</label>
               <input 
                 type="text" 
                 id="lname" 
                 name="last_name"
-                v-model="form.lastName" 
+                :value="form.lastName"
+                @input="handleFieldInput('lastName', $event)"
+                @blur="handleFieldBlur('lastName')"
                 placeholder="Your last name" 
                 required
                 :disabled="isSubmitting"
+                :aria-invalid="errors.lastName?.length ? 'true' : 'false'"
               >
+              <div v-if="errors.lastName?.length" class="error-message" role="alert">
+                {{ errors.lastName[0] }}
+              </div>
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': errors.email?.length }">
             <label for="email">Email Address *</label>
             <input 
               type="email" 
               id="email" 
               name="from_email"
-              v-model="form.email" 
+              :value="form.email"
+              @input="handleFieldInput('email', $event)"
+              @blur="handleFieldBlur('email')"
               placeholder="your.email@example.com" 
               required
               :disabled="isSubmitting"
+              :aria-invalid="errors.email?.length ? 'true' : 'false'"
             >
+            <div v-if="errors.email?.length" class="error-message" role="alert">
+              {{ errors.email[0] }}
+            </div>
           </div>
           
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': errors.subject?.length }">
             <label for="subject">Message *</label>
             <textarea 
               id="subject" 
               name="message"
-              v-model="form.subject" 
+              :value="form.subject"
+              @input="handleFieldInput('subject', $event)"
+              @blur="handleFieldBlur('subject')"
               placeholder="Tell us how we can help you..."
               rows="6"
               required
               :disabled="isSubmitting"
+              :aria-invalid="errors.subject?.length ? 'true' : 'false'"
             ></textarea>
+            <div v-if="errors.subject?.length" class="error-message" role="alert">
+              {{ errors.subject[0] }}
+            </div>
           </div>
           
           <button 
@@ -106,83 +130,80 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useEmailJS } from '../composables/useEmailJS.js'
+import { useForm } from '../composables/useForm.js'
+import { VALIDATION_RULES, REGEX_PATTERNS } from '../utils/validation.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const { sendEmail } = useEmailJS()
 
-const form = reactive({
-  email: '',
-  firstName: '',
-  lastName: '',
-  subject: ''
-})
+// Initialize form with comprehensive validation
+const {
+  formData: form,
+  errors,
+  isValid,
+  isSubmitting,
+  handleFieldInput,
+  handleFieldBlur,
+  handleSubmit,
+  resetForm,
+  showMessage
+} = useForm(
+  {
+    email: '',
+    firstName: '',
+    lastName: '',
+    subject: ''
+  },
+  {
+    firstName: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { minLength: 2, message: VALIDATION_RULES.MIN_LENGTH.replace('{min}', '2') }
+    ],
+    lastName: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { minLength: 2, message: VALIDATION_RULES.MIN_LENGTH.replace('{min}', '2') }
+    ],
+    email: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { pattern: REGEX_PATTERNS.EMAIL, message: VALIDATION_RULES.EMAIL }
+    ],
+    subject: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { minLength: 10, message: VALIDATION_RULES.MIN_LENGTH.replace('{min}', '10') }
+    ]
+  }
+)
 
-const isSubmitting = ref(false)
-const statusMessage = reactive({
-  text: '',
-  type: ''
-})
 const contactForm = ref(null)
 
 onMounted(() => {
   document.title = 'Contact Us - Epictetus EE Team'
 })
 
-const showMessage = (text, type) => {
-  statusMessage.text = text
-  statusMessage.type = type
-  
-  // Clear message after 8 seconds
-  setTimeout(() => {
-    statusMessage.text = ''
-    statusMessage.type = ''
-  }, 8000)
-  
-  // Scroll to message
-  setTimeout(() => {
-    const messageElement = document.querySelector('.status-message')
-    if (messageElement) {
-      messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }
-  }, 100)
-}
-
-const resetForm = () => {
-  Object.keys(form).forEach(key => form[key] = '')
-}
-
 const submitForm = async () => {
-  if (isSubmitting.value) return
-  
-  isSubmitting.value = true
-  statusMessage.text = ''
-  
-  try {
+  const result = await handleSubmit(async (formData) => {
     // Send email using EmailJS composable
-    const result = await sendEmail(contactForm.value)
+    const emailResult = await sendEmail(contactForm.value)
     
-    console.log('Email sent successfully:', result.status, result.text)
+    console.log('Email sent successfully:', emailResult.status, emailResult.text)
     showMessage('Thank you! Your message has been sent successfully. We\'ll get back to you soon.', 'success')
     
     // Reset form after successful submission
     resetForm()
-    
-  } catch (error) {
-    console.error('Failed to send email:', error)
-    
+  })
+  
+  if (!result.success) {
     let errorMessage = 'Sorry, there was an error sending your message. Please try again later.'
     
-    if (error.message.includes('not configured')) {
+    if (result.error?.message.includes('not configured')) {
       errorMessage = 'Email service is currently unavailable. Please try contacting us directly at epictetus.ee@hmu.gr'
-    } else if (error.message.includes('network')) {
+    } else if (result.error?.message.includes('network')) {
       errorMessage = 'Network error. Please check your connection and try again.'
     }
     
     showMessage(errorMessage, 'error')
-  } finally {
-    isSubmitting.value = false
   }
 }
 </script>
@@ -342,5 +363,18 @@ const submitForm = async () => {
 .contact-form textarea:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
+}
+
+/* Error message styling */
+.error-message {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.form-group.error input,
+.form-group.error textarea {
+  border-color: var(--error-color);
 }
 </style>

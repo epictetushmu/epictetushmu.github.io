@@ -17,7 +17,7 @@
       <!-- Desktop Navigation Links -->
       <div class="navbar-nav desktop-nav">
         <router-link
-          v-for="item in navigationItems"
+          v-for="item in navigationItems.filter(item => !item.external)"
           :key="item.path"
           :to="item.path"
           class="nav-link"
@@ -26,6 +26,19 @@
           <span v-if="item.icon" class="nav-icon">{{ item.icon }}</span>
           <span class="nav-text">{{ item.name }}</span>
         </router-link>
+        
+        <a
+          v-for="item in navigationItems.filter(item => item.external)"
+          :key="item.path"
+          :href="item.path"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="nav-link nav-link--external"
+        >
+          <span v-if="item.icon" class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-text">{{ item.name }}</span>
+          <span class="external-icon">↗</span>
+        </a>
 
         <!-- Admin Badge -->
         <span v-if="authStore.isAdmin" class="admin-badge">
@@ -76,7 +89,7 @@
       </div>
 
       <router-link
-        v-for="item in navigationItems"
+        v-for="item in navigationItems.filter(item => !item.external)"
         :key="item.path"
         :to="item.path"
         class="mobile-nav-link"
@@ -86,6 +99,20 @@
         <span v-if="item.icon" class="nav-icon">{{ item.icon }}</span>
         <span class="nav-text">{{ item.name }}</span>
       </router-link>
+      
+      <a
+        v-for="item in navigationItems.filter(item => item.external)"
+        :key="item.path"
+        :href="item.path"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mobile-nav-link mobile-nav-link--external"
+        @click="closeMobileMenu"
+      >
+        <span v-if="item.icon" class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-text">{{ item.name }}</span>
+        <span class="external-icon">↗</span>
+      </a>
 
       <!-- Admin Link in Mobile -->
       <router-link 
@@ -362,6 +389,33 @@ watch(() => route.path, () => {
 
 .nav-text {
   font-size: 0.875rem;
+}
+
+/* External link styles */
+.nav-link--external {
+  position: relative;
+}
+
+.external-icon {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+  opacity: 0.7;
+  transition: var(--transition);
+}
+
+.nav-link--external:hover .external-icon {
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+
+.mobile-nav-link--external {
+  position: relative;
+}
+
+.mobile-nav-link--external .external-icon {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+  opacity: 0.7;
 }
 
 /* Mobile Menu Toggle */

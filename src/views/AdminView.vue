@@ -194,8 +194,8 @@
     </AppModal>
 
     <!-- Error/Success Messages -->
-    <div v-if="message" :class="['message', message.type]">
-      {{ message.text }}
+    <div v-if="statusMessage.text" :class="['message', statusMessage.type]">
+      {{ statusMessage.text }}
     </div>
   </div>
 </template>
@@ -211,6 +211,7 @@ import AppModal from '@/components/ui/AppModal.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import ArticleEditor from '@/components/admin/ArticleEditor.vue'
 import { useBreadcrumbs } from '@/composables/useBreadcrumbs.js'
+import { useStatusMessage } from '@/composables/useStatusMessage.js'
 
 // Stores
 const authStore = useAuthStore()
@@ -229,11 +230,13 @@ const showEditArticleModal = ref(false)
 const selectedArticle = ref(null)
 const deletingArticleId = ref(null)
 const resetting = ref(false)
-const message = ref(null)
 const fileInput = ref(null)
 
 // Breadcrumbs
 const { breadcrumbs } = useBreadcrumbs('Admin')
+
+// Status messages
+const { statusMessage, showMessage } = useStatusMessage()
 
 // Admin tabs
 const adminTabs = [
@@ -380,12 +383,6 @@ const formatDate = (dateString) => {
   })
 }
 
-const showMessage = (text, type = 'info') => {
-  message.value = { text, type }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
-}
 
 // Lifecycle
 onMounted(() => {

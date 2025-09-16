@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import TopNavbar from '@/components/common/TopNavbar.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import ErrorBoundary from '@/components/ui/ErrorBoundary.vue'
 
 const isLoading = ref(true)
 
@@ -34,32 +35,34 @@ onMounted(() => {
     
     <!-- Main app -->
     <template v-else>
-      <header>
-        <TopNavbar
-          :navigationItems="navigationItems"
-          logoSrc="/hmu.png"
-          brandName="Epictetus"
-          :sticky="true"
-          variant="default"
-        />
-      </header>
-      
-      <main role="main">
-        <router-view v-slot="{ Component, route }">
-          <transition name="page" mode="out-in">
-            <component :is="Component" :key="route.path" />
-          </transition>
-        </router-view>
-      </main>
-      
-      <footer class="app-footer">
-        <div class="footer-content">
-          <p>&copy; 2025 Epictetus EE Team - Hellenic Mediterranean University</p>
-          <p class="footer-quote">
-            <em>"It's not what happens to you, but how you react to it that matters." - Epictetus</em>
-          </p>
-        </div>
-      </footer>
+      <ErrorBoundary>
+        <header>
+          <TopNavbar
+            :navigationItems="navigationItems"
+            logoSrc="/hmu.png"
+            brandName="Epictetus"
+            :sticky="true"
+            variant="default"
+          />
+        </header>
+        
+        <main role="main">
+          <router-view v-slot="{ Component, route }">
+            <transition name="page" mode="out-in">
+              <component :is="Component" :key="route.path" />
+            </transition>
+          </router-view>
+        </main>
+        
+        <footer class="app-footer">
+          <div class="footer-content">
+            <p>&copy; 2025 Epictetus EE Team - Hellenic Mediterranean University</p>
+            <p class="footer-quote">
+              <em>"It's not what happens to you, but how you react to it that matters." - Epictetus</em>
+            </p>
+          </div>
+        </footer>
+      </ErrorBoundary>
     </template>
   </div>
 </template>
