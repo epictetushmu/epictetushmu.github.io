@@ -22,6 +22,7 @@ export const useAuthStore = defineStore('auth', () => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       // Mock admin credentials - replace with actual authentication
+      // TODO: Replace with proper authentication service
       if (credentials.email === 'admin@epictetus.hmu.gr' && credentials.password === 'admin123') {
         user.value = {
           id: 1,
