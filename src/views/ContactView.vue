@@ -108,9 +108,11 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useEmailJS } from '../composables/useEmailJS.js'
+import { useStatusMessage } from '../composables/useStatusMessage.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const { sendEmail } = useEmailJS()
+const { statusMessage, showSuccess, showError } = useStatusMessage()
 
 const form = reactive({
   email: '',
@@ -120,34 +122,11 @@ const form = reactive({
 })
 
 const isSubmitting = ref(false)
-const statusMessage = reactive({
-  text: '',
-  type: ''
-})
 const contactForm = ref(null)
 
 onMounted(() => {
   document.title = 'Contact Us - Epictetus EE Team'
 })
-
-const showMessage = (text, type) => {
-  statusMessage.text = text
-  statusMessage.type = type
-  
-  // Clear message after 8 seconds
-  setTimeout(() => {
-    statusMessage.text = ''
-    statusMessage.type = ''
-  }, 8000)
-  
-  // Scroll to message
-  setTimeout(() => {
-    const messageElement = document.querySelector('.status-message')
-    if (messageElement) {
-      messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }
-  }, 100)
-}
 
 const resetForm = () => {
   Object.keys(form).forEach(key => form[key] = '')
@@ -164,7 +143,7 @@ const submitForm = async () => {
     const result = await sendEmail(contactForm.value)
     
     console.log('Email sent successfully:', result.status, result.text)
-    showMessage('Thank you! Your message has been sent successfully. We\'ll get back to you soon.', 'success')
+    showSuccess('Thank you! Your message has been sent successfully. We\'ll get back to you soon.')
     
     // Reset form after successful submission
     resetForm()
@@ -180,7 +159,7 @@ const submitForm = async () => {
       errorMessage = 'Network error. Please check your connection and try again.'
     }
     
-    showMessage(errorMessage, 'error')
+    showError(errorMessage)
   } finally {
     isSubmitting.value = false
   }

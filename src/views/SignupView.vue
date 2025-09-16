@@ -189,9 +189,11 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStatusMessage } from '../composables/useStatusMessage.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
+const { statusMessage, showSuccess, showError } = useStatusMessage()
 
 const form = reactive({
   firstName: '',
@@ -205,10 +207,6 @@ const form = reactive({
 })
 
 const isSubmitting = ref(false)
-const statusMessage = reactive({
-  text: '',
-  type: ''
-})
 const showTerms = ref(false)
 const showPrivacy = ref(false)
 
@@ -228,25 +226,6 @@ const canSubmit = computed(() => {
          form.agreeToTerms &&
          form.password.length >= 8
 })
-
-const showMessage = (text, type) => {
-  statusMessage.text = text
-  statusMessage.type = type
-  
-  // Clear message after 8 seconds
-  setTimeout(() => {
-    statusMessage.text = ''
-    statusMessage.type = ''
-  }, 8000)
-  
-  // Scroll to message
-  setTimeout(() => {
-    const messageElement = document.querySelector('.status-message')
-    if (messageElement) {
-      messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }
-  }, 100)
-}
 
 const resetForm = () => {
   Object.keys(form).forEach(key => {
@@ -275,10 +254,7 @@ const submitForm = async () => {
       passwordConfirm: '***' 
     })
     
-    showMessage(
-      'Account created successfully! You can now sign in with your credentials.', 
-      'success'
-    )
+    showSuccess('Account created successfully! You can now sign in with your credentials.')
     
     // Reset form
     resetForm()
@@ -290,10 +266,7 @@ const submitForm = async () => {
     
   } catch (error) {
     console.error('Failed to create account:', error)
-    showMessage(
-      'Failed to create account. Please try again later.', 
-      'error'
-    )
+    showError('Failed to create account. Please try again later.')
   } finally {
     isSubmitting.value = false
   }

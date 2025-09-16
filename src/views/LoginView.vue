@@ -9,30 +9,41 @@
 
     <div class="login-form-container">
       <form @submit.prevent="handleLogin" class="login-form">
-        <div class="form-group">
+        <div class="form-group" :class="{ 'error': errors.email?.length }">
           <label for="email">Email Address *</label>
           <input 
             type="email" 
             id="email" 
-            v-model="credentials.email" 
+            :value="credentials.email"
+            @input="handleFieldInput('email', $event)"
+            @blur="handleFieldBlur('email')"
             placeholder="Enter your email address"
             required
             :disabled="isSubmitting"
             autocomplete="username"
+            :aria-invalid="errors.email?.length ? 'true' : 'false'"
+            :aria-describedby="errors.email?.length ? 'email-error' : null"
           >
+          <div v-if="errors.email?.length" id="email-error" class="error-message" role="alert">
+            {{ errors.email[0] }}
+          </div>
         </div>
         
-        <div class="form-group">
+        <div class="form-group" :class="{ 'error': errors.password?.length }">
           <label for="password">Password *</label>
           <div class="password-input-group">
             <input 
               :type="showPassword ? 'text' : 'password'" 
               id="password" 
-              v-model="credentials.password" 
+              :value="credentials.password"
+              @input="handleFieldInput('password', $event)"
+              @blur="handleFieldBlur('password')"
               placeholder="Enter your password"
               required
               :disabled="isSubmitting"
               autocomplete="current-password"
+              :aria-invalid="errors.password?.length ? 'true' : 'false'"
+              :aria-describedby="errors.password?.length ? 'password-error' : null"
             >
             <button 
               type="button" 
@@ -42,6 +53,9 @@
             >
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
             </button>
+          </div>
+          <div v-if="errors.password?.length" id="password-error" class="error-message" role="alert">
+            {{ errors.password[0] }}
           </div>
         </div>
 
@@ -65,6 +79,7 @@
           type="submit" 
           class="btn btn-primary submit-btn"
           :disabled="!canSubmit || isSubmitting"
+          :aria-describedby="!isValid ? 'form-errors' : null"
         >
           <LoadingSpinner v-if="isSubmitting" size="small" color="white" />
           {{ isSubmitting ? 'Signing in...' : 'Sign In' }}
@@ -82,8 +97,24 @@
         class="status-message"
         :class="statusMessage.type"
         role="alert"
+        aria-live="polite"
       >
         {{ statusMessage.text }}
+      </div>
+      
+      <div 
+        v-if="!isValid && Object.keys(errors).length > 0" 
+        id="form-errors" 
+        class="form-errors" 
+        role="alert"
+        aria-live="assertive"
+      >
+        <h4>Please fix the following errors:</h4>
+        <ul>
+          <li v-for="(fieldErrors, field) in errors" :key="field">
+            {{ fieldErrors[0] }}
+          </li>
+        </ul>
       </div>
     </div>
 
@@ -118,13 +149,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import { useStatusMessage } from '@/composables/useStatusMessage.js'
+import { useLoading } from '@/composables/useLoading.js'
+import { useSimpleValidation } from '@/composables/useSimpleValidation.js'
+import { validateEmail, validateRequired } from '@/utils/simpleValidation.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { statusMessage, showSuccess, showError } = useStatusMessage()
+const { isLoading, startLoading, stopLoading } = useLoading()
+const { errors, validateForm, hasError, getError } = useSimpleValidation()
 
 const credentials = reactive({
   email: '',
@@ -132,57 +170,33 @@ const credentials = reactive({
   rememberMe: false
 })
 
-const isSubmitting = ref(false)
+const validationRules = {
+  email: [
+    (value) => validateRequired(value, 'Email'),
+    (value) => validateEmail(value)
+  ],
+  password: [
+    (value) => validateRequired(value, 'Password')
+  ]
+}
+
 const showPassword = ref(false)
 const showForgotPassword = ref(false)
 const resetEmail = ref('')
-
-const statusMessage = reactive({
-  text: '',
-  type: ''
-})
 
 onMounted(() => {
   document.title = 'Sign In - Epictetus EE Team'
 })
 
-const canSubmit = computed(() => {
-  return credentials.email.trim() && credentials.password.trim()
-})
-
-const showMessage = (text, type) => {
-  statusMessage.text = text
-  statusMessage.type = type
-  
-  // Clear message after 8 seconds
-  setTimeout(() => {
-    statusMessage.text = ''
-    statusMessage.type = ''
-  }, 8000)
-}
-
-const resetForm = () => {
-  credentials.email = ''
-  credentials.password = ''
-  credentials.rememberMe = false
-}
-
 const handleLogin = async () => {
-  if (!canSubmit.value || isSubmitting.value) return
-  
-  isSubmitting.value = true
-  statusMessage.text = ''
-  
-  try {
+  const result = await handleSubmit(async (formData) => {
     const success = await authStore.login({
-      email: credentials.email,
-      password: credentials.password
+      email: formData.email,
+      password: formData.password
     })
     
     if (success) {
       showMessage('Login successful! Welcome back.', 'success')
-      
-      // Reset form
       resetForm()
       
       // Redirect to admin panel
@@ -190,13 +204,12 @@ const handleLogin = async () => {
         router.push('/admin')
       }, 1000)
     } else {
-      showMessage('Invalid email or password. Please try again.', 'error')
+      throw new Error('Invalid email or password. Please try again.')
     }
-  } catch (error) {
-    console.error('Login error:', error)
-    showMessage('Login failed. Please try again.', 'error')
-  } finally {
-    isSubmitting.value = false
+  })
+  
+  if (!result.success) {
+    showError(result.error?.message || 'Login failed. Please try again.')
   }
 }
 
@@ -208,14 +221,14 @@ const handleForgotPassword = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     console.log('Password reset requested for:', resetEmail.value)
-    showMessage(`Password reset instructions sent to ${resetEmail.value}`, 'success')
+    showSuccess(`Password reset instructions sent to ${resetEmail.value}`)
     
     showForgotPassword.value = false
     resetEmail.value = ''
     
   } catch (error) {
     console.error('Password reset failed:', error)
-    showMessage('Failed to send reset instructions. Please try again.', 'error')
+    showError('Failed to send reset instructions. Please try again.')
   }
 }
 </script>
@@ -461,6 +474,39 @@ const handleForgotPassword = async () => {
   .modal-body {
     padding: 1rem;
   }
+}
+
+/* Error message styling */
+.error-message {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.form-errors {
+  background-color: #fdeaea;
+  color: var(--error-color);
+  border: 1px solid #f5c6cb;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.form-errors h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.form-errors ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.form-errors li {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
 }
 
 /* Focus states for accessibility */
