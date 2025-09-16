@@ -11,112 +11,155 @@
     <div class="signup-form-container">
       <form @submit.prevent="submitForm" class="signup-form">
         <div class="form-row">
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': errors.firstName?.length }">
             <label for="fname">First Name *</label>
             <input 
               type="text" 
               id="fname"
-              v-model="form.firstName" 
+              :value="form.firstName"
+              @input="handleFieldInput('firstName', $event)"
+              @blur="handleFieldBlur('firstName')"
               placeholder="Enter your first name" 
               required
               :disabled="isSubmitting"
+              :aria-invalid="errors.firstName?.length ? 'true' : 'false'"
             >
+            <div v-if="errors.firstName?.length" class="error-message" role="alert">
+              {{ errors.firstName[0] }}
+            </div>
           </div>
           
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': errors.lastName?.length }">
             <label for="lname">Last Name *</label>
             <input 
               type="text" 
               id="lname"
-              v-model="form.lastName" 
+              :value="form.lastName"
+              @input="handleFieldInput('lastName', $event)"
+              @blur="handleFieldBlur('lastName')"
               placeholder="Enter your last name" 
               required
               :disabled="isSubmitting"
+              :aria-invalid="errors.lastName?.length ? 'true' : 'false'"
             >
+            <div v-if="errors.lastName?.length" class="error-message" role="alert">
+              {{ errors.lastName[0] }}
+            </div>
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" :class="{ 'error': errors.regNumber?.length }">
           <label for="am">Registration Number *</label>
           <input 
             type="text" 
             id="am"
-            v-model="form.regNumber" 
+            :value="form.regNumber"
+            @input="handleFieldInput('regNumber', $event)"
+            @blur="handleFieldBlur('regNumber')"
             placeholder="Enter your HMU registration number" 
             required
             :disabled="isSubmitting"
+            :aria-invalid="errors.regNumber?.length ? 'true' : 'false'"
           >
           <small class="field-help">Your student registration number at HMU</small>
+          <div v-if="errors.regNumber?.length" class="error-message" role="alert">
+            {{ errors.regNumber[0] }}
+          </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" :class="{ 'error': errors.email?.length }">
           <label for="email">Email Address *</label>
           <input 
             type="email" 
             id="email"
-            v-model="form.email" 
+            :value="form.email"
+            @input="handleFieldInput('email', $event)"
+            @blur="handleFieldBlur('email')"
             placeholder="your.email@example.com" 
             required
             :disabled="isSubmitting"
+            :aria-invalid="errors.email?.length ? 'true' : 'false'"
           >
           <small class="field-help">We'll use this to send you important updates</small>
+          <div v-if="errors.email?.length" class="error-message" role="alert">
+            {{ errors.email[0] }}
+          </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" :class="{ 'error': errors.username?.length }">
           <label for="username">Username *</label>
           <input 
             type="text" 
             id="username"
-            v-model="form.username" 
+            :value="form.username"
+            @input="handleFieldInput('username', $event)"
+            @blur="handleFieldBlur('username')"
             placeholder="Choose a unique username" 
             required
             :disabled="isSubmitting"
+            :aria-invalid="errors.username?.length ? 'true' : 'false'"
           >
+          <div v-if="errors.username?.length" class="error-message" role="alert">
+            {{ errors.username[0] }}
+          </div>
         </div>
 
         <div class="form-row">
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': errors.password?.length }">
             <label for="psw">Password *</label>
             <input 
               type="password" 
               id="psw"
-              v-model="form.password" 
+              :value="form.password"
+              @input="handleFieldInput('password', $event)"
+              @blur="handleFieldBlur('password')"
               placeholder="Create a strong password" 
               required
               :disabled="isSubmitting"
-              minlength="8"
+              :aria-invalid="errors.password?.length ? 'true' : 'false'"
             >
+            <div v-if="errors.password?.length" class="error-message" role="alert">
+              {{ errors.password[0] }}
+            </div>
           </div>
           
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': errors.passwordConfirm?.length }">
             <label for="psw_repeat">Confirm Password *</label>
             <input 
               type="password" 
               id="psw_repeat"
-              v-model="form.passwordConfirm" 
+              :value="form.passwordConfirm"
+              @input="handleFieldInput('passwordConfirm', $event)"
+              @blur="handleFieldBlur('passwordConfirm')"
               placeholder="Repeat your password" 
               required
               :disabled="isSubmitting"
-              :class="{ 'error': form.password && form.passwordConfirm && form.password !== form.passwordConfirm }"
+              :aria-invalid="errors.passwordConfirm?.length ? 'true' : 'false'"
             >
-            <small v-if="form.password && form.passwordConfirm && form.password !== form.passwordConfirm" class="error-text">
-              Passwords don't match
-            </small>
+            <div v-if="errors.passwordConfirm?.length" class="error-message" role="alert">
+              {{ errors.passwordConfirm[0] }}
+            </div>
           </div>
         </div>
 
-        <div class="form-group checkbox-group">
+        <div class="form-group checkbox-group" :class="{ 'error': errors.agreeToTerms?.length }">
           <label class="checkbox-label">
             <input 
               type="checkbox" 
-              v-model="form.agreeToTerms" 
+              :checked="form.agreeToTerms"
+              @change="handleFieldInput('agreeToTerms', $event)"
+              @blur="handleFieldBlur('agreeToTerms')"
               required
               :disabled="isSubmitting"
+              :aria-invalid="errors.agreeToTerms?.length ? 'true' : 'false'"
             >
             <span class="checkmark"></span>
             I agree to the <a href="#" @click.prevent="showTerms = true">Terms of Service</a> 
             and <a href="#" @click.prevent="showPrivacy = true">Privacy Policy</a>
           </label>
+          <div v-if="errors.agreeToTerms?.length" class="error-message" role="alert">
+            {{ errors.agreeToTerms[0] }}
+          </div>
         </div>
 
         <div class="form-actions">
@@ -187,26 +230,85 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStatusMessage } from '../composables/useStatusMessage.js'
+import { useForm } from '../composables/useForm.js'
+import { VALIDATION_RULES, REGEX_PATTERNS } from '../utils/validation.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
-const { statusMessage, showSuccess, showError } = useStatusMessage()
 
-const form = reactive({
-  firstName: '',
-  lastName: '',
-  regNumber: '',
-  email: '',
-  username: '',
-  password: '',
-  passwordConfirm: '',
-  agreeToTerms: false
-})
+// Initialize form with comprehensive validation
+const {
+  formData: form,
+  errors,
+  isValid,
+  isSubmitting,
+  handleFieldInput,
+  handleFieldBlur,
+  handleSubmit,
+  resetForm,
+  showMessage
+} = useForm(
+  {
+    firstName: '',
+    lastName: '',
+    regNumber: '',
+    email: '',
+    username: '',
+    password: '',
+    passwordConfirm: '',
+    agreeToTerms: false
+  },
+  {
+    firstName: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { minLength: 2, message: VALIDATION_RULES.MIN_LENGTH.replace('{min}', '2') }
+    ],
+    lastName: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { minLength: 2, message: VALIDATION_RULES.MIN_LENGTH.replace('{min}', '2') }
+    ],
+    regNumber: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { minLength: 5, message: VALIDATION_RULES.MIN_LENGTH.replace('{min}', '5') }
+    ],
+    email: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { pattern: REGEX_PATTERNS.EMAIL, message: VALIDATION_RULES.EMAIL }
+    ],
+    username: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { minLength: 3, message: VALIDATION_RULES.MIN_LENGTH.replace('{min}', '3') }
+    ],
+    password: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { minLength: 8, message: VALIDATION_RULES.MIN_LENGTH.replace('{min}', '8') }
+    ],
+    passwordConfirm: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { 
+        validator: (value, formData) => {
+          if (value !== formData.password) {
+            return VALIDATION_RULES.MATCH
+          }
+          return null
+        }
+      }
+    ],
+    agreeToTerms: [
+      { 
+        validator: (value) => {
+          if (!value) {
+            return 'You must agree to the terms and conditions'
+          }
+          return null
+        }
+      }
+    ]
+  }
+)
 
-const isSubmitting = ref(false)
 const showTerms = ref(false)
 const showPrivacy = ref(false)
 
@@ -214,47 +316,19 @@ onMounted(() => {
   document.title = 'Sign Up - Epictetus EE Team'
 })
 
-const canSubmit = computed(() => {
-  return form.firstName && 
-         form.lastName && 
-         form.regNumber && 
-         form.email && 
-         form.username && 
-         form.password && 
-         form.passwordConfirm && 
-         form.password === form.passwordConfirm && 
-         form.agreeToTerms &&
-         form.password.length >= 8
-})
-
-const resetForm = () => {
-  Object.keys(form).forEach(key => {
-    if (key === 'agreeToTerms') {
-      form[key] = false
-    } else {
-      form[key] = ''
-    }
-  })
-}
-
 const submitForm = async () => {
-  if (!canSubmit.value || isSubmitting.value) return
-  
-  isSubmitting.value = true
-  statusMessage.text = ''
-  
-  try {
+  const result = await handleSubmit(async (formData) => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000))
     
     // In a real app, this would call an authentication API
     console.log('Account creation attempt:', { 
-      ...form, 
+      ...formData, 
       password: '***', 
       passwordConfirm: '***' 
     })
     
-    showSuccess('Account created successfully! You can now sign in with your credentials.')
+    showMessage('Account created successfully! You can now sign in with your credentials.', 'success')
     
     // Reset form
     resetForm()
@@ -263,12 +337,10 @@ const submitForm = async () => {
     setTimeout(() => {
       router.push('/login')
     }, 2000)
-    
-  } catch (error) {
-    console.error('Failed to create account:', error)
-    showError('Failed to create account. Please try again later.')
-  } finally {
-    isSubmitting.value = false
+  })
+  
+  if (!result.success) {
+    showMessage(result.error?.message || 'Failed to create account. Please try again later.', 'error')
   }
 }
 </script>
