@@ -149,36 +149,43 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
-import { useStatusMessage } from '@/composables/useStatusMessage.js'
-import { useLoading } from '@/composables/useLoading.js'
-import { useSimpleValidation } from '@/composables/useSimpleValidation.js'
-import { validateEmail, validateRequired } from '@/utils/simpleValidation.js'
+import { useForm } from '@/composables/useForm.js'
+import { VALIDATION_RULES, REGEX_PATTERNS } from '@/utils/validation.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { statusMessage, showSuccess, showError } = useStatusMessage()
-const { isLoading, startLoading, stopLoading } = useLoading()
-const { errors, validateForm, hasError, getError } = useSimpleValidation()
 
-const credentials = reactive({
-  email: '',
-  password: '',
-  rememberMe: false
-})
-
-const validationRules = {
-  email: [
-    (value) => validateRequired(value, 'Email'),
-    (value) => validateEmail(value)
-  ],
-  password: [
-    (value) => validateRequired(value, 'Password')
-  ]
-}
+// Initialize form with comprehensive validation
+const {
+  formData: credentials,
+  errors,
+  isValid,
+  isSubmitting,
+  handleFieldInput,
+  handleFieldBlur,
+  handleSubmit,
+  resetForm,
+  showMessage
+} = useForm(
+  {
+    email: '',
+    password: '',
+    rememberMe: false
+  },
+  {
+    email: [
+      { required: true, message: VALIDATION_RULES.REQUIRED },
+      { pattern: REGEX_PATTERNS.EMAIL, message: VALIDATION_RULES.EMAIL }
+    ],
+    password: [
+      { required: true, message: VALIDATION_RULES.REQUIRED }
+    ]
+  }
+)
 
 const showPassword = ref(false)
 const showForgotPassword = ref(false)
@@ -209,7 +216,7 @@ const handleLogin = async () => {
   })
   
   if (!result.success) {
-    showError(result.error?.message || 'Login failed. Please try again.')
+    showMessage(result.error?.message || 'Login failed. Please try again.', 'error')
   }
 }
 
@@ -221,14 +228,14 @@ const handleForgotPassword = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     console.log('Password reset requested for:', resetEmail.value)
-    showSuccess(`Password reset instructions sent to ${resetEmail.value}`)
+    showMessage(`Password reset instructions sent to ${resetEmail.value}`, 'success')
     
     showForgotPassword.value = false
     resetEmail.value = ''
     
   } catch (error) {
     console.error('Password reset failed:', error)
-    showError('Failed to send reset instructions. Please try again.')
+    showMessage('Failed to send reset instructions. Please try again.', 'error')
   }
 }
 </script>
