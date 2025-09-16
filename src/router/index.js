@@ -71,7 +71,8 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  // Use Vite base path for history to support both user/org and project pages
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
     // If there's a saved position (back/forward navigation), use it
