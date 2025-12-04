@@ -1,130 +1,18 @@
-# Epictetus EE Team
+# Epictetus EE Team Website
 
-**Epictetus** is a student-led initiative by the Department of Electronic Engineering at the Hellenic Mediterranean University (HMU). Our mission is to develop projects that enhance the academic environment, showcase our institution's strengths, and address relevant challenges and opportunities.
+This is the official website for the Epictetus EE Team, a student initiative at the Hellenic Mediterranean University's Electronic Engineering Department.
 
-## 🌐 Project Overview
-
-This repository hosts the source code for our Vue.js website, designed to make HMU a better place to study. The site includes:
-
-- **Home Page**: Introduction to our mission and initiatives.
-- **News Section**: Updates on recent and upcoming events.
-- **Authentication Pages**: Login and signup interfaces for users.
-- **Contact Page**: Functional email contact form with EmailJS integration.
-- **E-Library**: Digital library with searchable catalog of electronics and engineering resources.
-
-## 🛠️ Technologies Used
-
-- **Vue.js 3** - Progressive JavaScript Framework with Composition API
-- **Vue Router** - Official router for Vue.js
-- **Vite** - Fast development build tool and bundler
-- **EmailJS** - Client-side email sending service
-- **CSS3** - Modern styling with scoped components
-- **JavaScript (ES6+)** - Modern JavaScript features
-
-## 📁 Project Structure
-
-```
-epictetus/
-├── public/              # Static assets
-│   ├── hmu.png
-│   ├── logo.jpg
-│   └── vite.svg
-├── src/
-│   ├── components/      # Reusable Vue components
-│   ├── views/          # Page components
-│   ├── router/         # Vue Router configuration
-│   ├── config/         # Application configuration
-│   ├── composables/    # Vue composables for shared logic
-│   ├── assets/         # Project assets
-│   ├── App.vue         # Root component
-│   ├── main.js         # Application entry point
-│   └── style.css       # Global styles
-├── .env.template       # Environment variables template
-├── EMAIL_SETUP.md      # EmailJS setup instructions
-├── package.json        # Dependencies and scripts
-├── vite.config.js      # Vite configuration
-└── index.html          # Entry HTML file
-├── src/
-│   ├── assets/
-│   │   └── vue.svg
-│   ├── components/
-│   ├── router/
-│   │   └── index.js
-│   ├── views/
-│   │   ├── ContactView.vue
-│   │   ├── HomeView.vue
-│   │   ├── LibraryView.vue
-│   │   ├── LoginView.vue
-│   │   ├── NewsView.vue
-│   │   └── SignupView.vue
-│   ├── App.vue
-│   ├── main.js
-│   └── style.css
-├── index.html
-├── package.json
-├── vite.config.js
-└── README.md
-```
-
-## 🚀 Getting Started
+### Local Development
 
 To run the project locally:
 
-1. **Clone the repository**:
+```bash
+npm install
+npm run dev
+```
 
-   ```bash
-   git clone https://github.com/nikitasmen/epictetus.git
-   cd epictetus
-   ```
+### Deployment
 
-2. **Install dependencies**:
+This project is deployed to GitHub Pages via GitHub Actions.
 
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**:
-
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser** and navigate to the URL shown in your terminal (typically `http://localhost:5173`) to view the site.
-
-## ✨ Features
-
-- **Responsive Design**: Optimized for various screen sizes
-- **Vue Components**: Modular and reusable UI components
-- **Vue Router**: Client-side routing with navigation guards
-- **E-Library System**: Search, filter, and view electronic resources
-- **Form Validation**: Client-side validation for all forms
-
-## 📚 E-Library
-
-Our E-Library feature offers:
-
-- Searchable catalog of electronic resources
-- Category filtering
-- Detailed book information
-- "Add to Favorites" functionality
-- Mobile-responsive design
-
-## 🔮 Future Enhancements
-
-- Add backend API integration for dynamic content
-- Implement user authentication system
-- Expand E-Library with more resources and download capabilities
-- Create an admin panel for content management
-- Add dark mode theme option
-
-## 🤝 Contributing
-
-We welcome contributions from the community! If you're interested in collaborating, please fork the repository and submit a pull request. For major changes, open an issue first to discuss your ideas.
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-*Inspired by the Stoic philosopher Epictetus — "It's not what happens to you, but how you react to it that matters."*
+**Note:** If you are seeing asset path issues, please ensure your browser cache is cleared after deployment.
