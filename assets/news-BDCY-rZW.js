@@ -1,4 +1,4 @@
-import{G as m,l as g,g as u}from"./index-DpsdNvvR.js";const f=[{id:1,title:"New Electronic Engineering Laboratory Opens",description:"Our department has just inaugurated a state-of-the-art electronics laboratory equipped with the latest instruments and tools for advanced research and education.",content:`We are excited to announce the opening of our new Electronic Engineering Laboratory, a cutting-edge facility that will enhance our research capabilities and provide students with hands-on experience using industry-standard equipment.
+import{G as m,l as g,g as u}from"./index-BpKRf9zd.js";const f=[{id:1,title:"New Electronic Engineering Laboratory Opens",description:"Our department has just inaugurated a state-of-the-art electronics laboratory equipped with the latest instruments and tools for advanced research and education.",content:`We are excited to announce the opening of our new Electronic Engineering Laboratory, a cutting-edge facility that will enhance our research capabilities and provide students with hands-on experience using industry-standard equipment.
 
 The laboratory features:
 - Advanced oscilloscopes and signal generators
