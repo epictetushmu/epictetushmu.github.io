@@ -51,6 +51,14 @@ const routes = [
     }
   },
   {
+    path: '/chaniathon',
+    name: 'Chaniathon',
+    component: () => import('../views/ChaniathonView.vue'),
+    meta: {
+      title: 'Chaniathon - Epictetus EE Team'
+    }
+  },
+  {
     path: '/admin',
     name: 'Admin',
     component: () => import('../views/AdminView.vue'),

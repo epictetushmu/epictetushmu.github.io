@@ -1,266 +1,158 @@
 <template>
   <div class="page-container">
-    <!-- Header Section -->
-    <PageHeader
-      title="Latest News & Updates"
-      description="Stay informed with the latest developments, insights, and announcements from the Epictetus EE Team"
-      :breadcrumbs="breadcrumbs"
-      :showBreadcrumbs="true"
-    />
-
-    <!-- Filter Section -->
-    <FilterSection
-      :categories="filterCategories"
-      :defaultCategory="'all'"
-      :showSearch="true"
-      searchPlaceholder="Search news..."
-      :showSort="true"
-      :sortOptions="sortOptions"
-      :showViewToggle="true"
-      @update:category="handleCategoryChange"
-      @update:search="handleSearchChange"
-      @update:sort="handleSortChange"
-      @update:view="handleViewChange"
-    />
-
-    <!-- News Grid -->
-    <div v-if="filteredArticles.length > 0" :class="['news-container', `news-container--${currentView}`]">
-      <NewsCard
-        v-for="article in filteredArticles"
-        :key="article.id"
-        :article="transformArticleData(article)"
-        :variant="currentView === 'list' ? 'compact' : 'default'"
-        :layout="currentView === 'list' ? 'horizontal' : 'vertical'"
-        :isArticleLiked="article.isLiked"
-        :isSaved="article.isSaved"
-        @read="handleArticleRead"
-        @save="handleArticleSave"
-        @unsave="handleArticleUnsave"
-        @like="handleArticleLike"
-        @unlike="handleArticleUnlike"
-        @share="handleArticleShare"
-        @view-source="handleViewSource"
-        @topic-click="handleTopicClick"
-      />
+    <!-- Page Title Section -->
+    <div class="section-title">
+      <h2>Latest News & Updates</h2>
+      <p>Stay informed with the latest developments from the Epictetus - Lab of Experimental Ideas</p>
     </div>
 
-    <!-- Load More Button -->
-    <div class="load-more-section" v-if="hasMoreArticles && filteredArticles.length > 0">
-      <AppButton
-        variant="outline"
-        size="large"
-        @click="loadMore"
-        :loading="loadingMore"
-      >
-        Load More Articles
-      </AppButton>
+    <!-- News Grid -->
+    <div v-if="articles.length > 0" class="news-grid">
+      <div v-for="article in articles" :key="article.id" class="news-card">
+        <div class="news-image">
+          <!-- Using a placeholder icon as imageUrl is not in the store data -->
+          <span>{{ getIconForCategory(article.category) }}</span>
+        </div>
+        <div class="news-content">
+          <div class="news-meta">
+            <span class="news-category">{{ article.category }}</span>
+            <span class="news-date">{{ article.publishedDate }}</span>
+          </div>
+          <h3 class="news-title">{{ article.title }}</h3>
+          <p class="news-description">{{ article.description }}</p>
+          <a href="#" class="btn btn-outline" @click.prevent="readMore(article)">Read More</a>
+        </div>
+      </div>
     </div>
 
     <!-- Empty State -->
     <div v-else class="empty-state">
-      <div class="empty-icon">📰</div>
       <h3>No articles found</h3>
-      <p>Try adjusting your search or filter criteria</p>
+      <p>There are currently no news articles available. Please check back later.</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useNewsStore } from '@/stores/news.js'
-import PageHeader from '@/components/common/PageHeader.vue'
-import FilterSection from '@/components/common/FilterSection.vue'
-import NewsCard from '@/components/news/NewsCard.vue'
-import AppButton from '@/components/ui/AppButton.vue'
-import { useBreadcrumbs } from '@/composables/useBreadcrumbs.js'
+import { computed } from 'vue';
+import { useNewsStore } from '@/stores/news.js';
 
-// Stores
-const newsStore = useNewsStore()
+// Access the news store
+const newsStore = useNewsStore();
 
-// Reactive data
-const searchQuery = ref('')
-const selectedCategory = ref('all')
-const currentView = ref('grid')
-const currentSort = ref('')
-const hasMoreArticles = ref(true)
-const loadingMore = ref(false)
+// Get articles from the store
+const articles = computed(() => newsStore.articles);
 
-// Navigation breadcrumbs
-const { breadcrumbs } = useBreadcrumbs('News')
-
-// Get data from store
-const filterCategories = computed(() => newsStore.categories)
-const articles = computed(() => newsStore.articles)
-
-// Sort options for FilterSection component
-const sortOptions = ref([
-  { value: 'date', label: 'Latest First' },
-  { value: 'title', label: 'Title A-Z' },
-  { value: 'author', label: 'Author A-Z' },
-  { value: 'views', label: 'Most Viewed' },
-  { value: 'likes', label: 'Most Liked' }
-])
-
-// Computed properties
-const filteredArticles = computed(() => {
-  if (searchQuery.value) {
-    return newsStore.searchArticles(searchQuery.value, selectedCategory.value)
+// Method to get a representative icon for a category
+const getIconForCategory = (category) => {
+  switch (category.toLowerCase()) {
+    case 'events': return '🏆';
+    case 'research': return '🔬';
+    case 'announcements': return '📢';
+    default: return '📰';
   }
-  return newsStore.articlesByCategory(selectedCategory.value)
-})
+};
 
-// Methods
-const transformArticleData = (article) => {
-  return {
-    id: article.id,
-    title: article.title,
-    description: article.description,
-    content: article.content,
-    author: article.author,
-    category: article.category,
-    publishedDate: article.publishedDate,
-    imageUrl: article.imageUrl,
-    tags: article.tags,
-    readTime: article.readTime,
-    views: article.views,
-    likes: article.likes,
-    featured: article.featured,
-    isBreaking: false,
-    isTrending: article.featured,
-    topics: article.tags.slice(0, 2),
-    contentTypes: article.featured ? ['featured'] : []
-  }
-}
-
-const handleCategoryChange = (category) => {
-  selectedCategory.value = category
-}
-
-const handleSearchChange = (query) => {
-  searchQuery.value = query
-}
-
-const handleSortChange = (sortOption) => {
-  currentSort.value = sortOption
-}
-
-const handleViewChange = (view) => {
-  currentView.value = view
-}
-
-const handleArticleRead = (article) => {
-  // Increment views in store
-  newsStore.incrementViews(article.id)
-}
-
-const handleArticleSave = (article) => {
-  // Handle article save logic - could be stored in user preferences
-  console.log('Article saved:', article.title)
-}
-
-const handleArticleUnsave = (article) => {
-  // Handle article unsave logic
-  console.log('Article unsaved:', article.title)
-}
-
-const handleArticleLike = (article) => {
-  // Handle article like logic
-  newsStore.likeArticle(article.id)
-}
-
-const handleArticleUnlike = (article) => {
-  // Handle article unlike logic - would need to track user preferences
-  console.log('Article unliked:', article.title)
-}
-
-const handleArticleShare = (shareData) => {
-  // Handle article sharing logic
-  console.log('Article shared:', shareData)
-}
-
-const handleViewSource = (article) => {
-  // Handle view source logic
-  console.log('View source for:', article.title)
-}
-
-const handleTopicClick = (topic) => {
-  // Handle topic click logic
-}
-
-const loadMore = async () => {
-  loadingMore.value = true
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  hasMoreArticles.value = false
-  loadingMore.value = false
-}
+// Placeholder for read more functionality
+const readMore = (article) => {
+  alert(`Navigating to article: ${article.title}`);
+  // In a real app, you would use Vue Router to navigate to the article's page
+  // router.push({ name: 'ArticleDetail', params: { id: article.id } });
+};
 </script>
 
 <style scoped>
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 5rem 1.5rem;
 }
 
-.news-container {
-  margin-top: 2rem;
-}
-
-.news-container--grid {
+/* News Grid Styles */
+.news-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+  margin-top: 3.5rem;
 }
 
-.news-container--list {
+.news-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 
-.load-more-section {
+.news-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.news-image {
+  height: 200px;
+  background-color: #e0f2fe;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 3rem;
+  font-size: 3rem;
+  color: var(--secondary);
 }
 
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--text-secondary);
+.news-content {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Allows the content to fill the card */
 }
 
-.empty-icon {
-  font-size: 4rem;
+.news-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--gray);
   margin-bottom: 1rem;
 }
 
-.empty-state h3 {
+.news-category {
+  font-weight: 600;
+  color: var(--primary);
+  background-color: #e0e7ff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+}
+
+.news-title {
   font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
+  margin-bottom: 1rem;
+  color: var(--dark);
+  line-height: 1.3;
 }
 
-.empty-state p {
-  font-size: 1rem;
-  max-width: 400px;
-  margin: 0 auto;
+.news-description {
+  color: var(--gray);
+  margin-bottom: 1.5rem;
+  flex-grow: 1; /* Pushes the button to the bottom */
 }
 
-@media (max-width: 768px) {
-  .page-container {
-    padding: 1rem;
-  }
-  
-  .news-container--grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+.news-content .btn {
+  margin-top: auto; /* Aligns button to the bottom */
+  align-self: flex-start; /* Prevents button from stretching full-width */
 }
 
-@media (max-width: 480px) {
-  .page-container {
-    padding: 0.5rem;
-  }
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--gray);
+}
+
+.empty-state h3 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: var(--dark);
 }
 </style>
