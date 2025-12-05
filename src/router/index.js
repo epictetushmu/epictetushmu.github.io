@@ -66,7 +66,53 @@ const routes = [
       title: 'Admin Panel - Epictetus EE Team',
       requiresAuth: true,
       requiresAdmin: true
-    }
+    },
+    children: [
+      {
+        path: '',
+        redirect: 'news' // Default child route for /admin
+      },
+      {
+        path: 'news',
+        name: 'AdminNewsManagement',
+        component: () => import('../views/admin/AdminNewsManagement.vue'),
+        meta: {
+          title: 'News Management - Epictetus EE Team',
+          requiresAuth: true,
+          requiresAdmin: true
+        }
+      },
+      {
+        path: 'pull',
+        name: 'AdminPull',
+        component: () => import('../views/AdminPull.vue'),
+        meta: {
+          title: 'Admin Pull - Epictetus EE Team',
+          requiresAuth: true,
+          requiresAdmin: true
+        }
+      },
+      {
+        path: 'stats',
+        name: 'AdminStatistics',
+        component: () => import('../views/admin/AdminStatistics.vue'),
+        meta: {
+          title: 'Statistics - Epictetus EE Team',
+          requiresAuth: true,
+          requiresAdmin: true
+        }
+      },
+      {
+        path: 'settings',
+        name: 'AdminSettings',
+        component: () => import('../views/admin/AdminSettings.vue'),
+        meta: {
+          title: 'Settings - Epictetus EE Team',
+          requiresAuth: true,
+          requiresAdmin: true
+        }
+      }
+    ]
   },
   {
     path: '/:pathMatch(.*)*',

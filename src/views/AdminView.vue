@@ -10,172 +10,20 @@
 
     <!-- Admin Navigation -->
     <div class="admin-nav">
-      <button 
-        v-for="tab in adminTabs" 
+      <router-link
+        v-for="tab in adminTabs"
         :key="tab.id"
-        @click="activeTab = tab.id"
-        :class="['admin-nav-btn', { 'active': activeTab === tab.id }]"
+        :to="tab.route"
+        class="admin-nav-btn"
+        :class="{ 'active': $route.path === tab.route }"
       >
         <span class="nav-icon">{{ tab.icon }}</span>
         <span class="nav-text">{{ tab.name }}</span>
-      </button>
+      </router-link>
     </div>
 
-    <!-- News Management Tab -->
-    <div v-if="activeTab === 'news'" class="admin-section">
-      <div class="section-header">
-        <h2>News Management</h2>
-        <AppButton @click="showAddArticleModal = true" variant="primary">
-          <span class="icon">📝</span>
-          Add New Article
-        </AppButton>
-      </div>
-
-      <!-- Articles List -->
-      <div class="articles-list">
-        <div v-if="newsStore.isLoading" class="loading-state">
-          <LoadingSpinner size="large" />
-          <p>Loading articles...</p>
-        </div>
-        
-        <div v-else-if="articles.length === 0" class="empty-state">
-          <div class="empty-icon">📰</div>
-          <h3>No articles found</h3>
-          <p>Start by creating your first news article</p>
-        </div>
-
-        <div v-else class="articles-grid">
-          <div 
-            v-for="article in articles" 
-            :key="article.id" 
-            class="article-card"
-          >
-            <div class="article-header">
-              <h3 class="article-title">{{ article.title }}</h3>
-              <div class="article-badges">
-                <span v-if="article.featured" class="badge featured">Featured</span>
-                <span class="badge category">{{ article.category }}</span>
-              </div>
-            </div>
-            
-            <div class="article-meta">
-              <span class="author">By {{ article.author }}</span>
-              <span class="date">{{ formatDate(article.publishedDate) }}</span>
-              <span class="stats">
-                👁️ {{ article.views }} | ❤️ {{ article.likes }}
-              </span>
-            </div>
-            
-            <p class="article-excerpt">{{ article.description }}</p>
-            
-            <div class="article-actions">
-              <AppButton 
-                @click="editArticle(article)" 
-                variant="outline" 
-                size="small"
-              >
-                ✏️ Edit
-              </AppButton>
-              <AppButton 
-                @click="deleteArticle(article)" 
-                variant="outline" 
-                size="small"
-                :loading="deletingArticleId === article.id"
-              >
-                🗑️ Delete
-              </AppButton>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Statistics Tab -->
-    <div v-if="activeTab === 'stats'" class="admin-section">
-      <div class="section-header">
-        <h2>Statistics</h2>
-      </div>
-      
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">📰</div>
-          <div class="stat-content">
-            <h3>{{ articles.length }}</h3>
-            <p>Total Articles</p>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">⭐</div>
-          <div class="stat-content">
-            <h3>{{ featuredArticlesCount }}</h3>
-            <p>Featured Articles</p>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">👁️</div>
-          <div class="stat-content">
-            <h3>{{ totalViews }}</h3>
-            <p>Total Views</p>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">❤️</div>
-          <div class="stat-content">
-            <h3>{{ totalLikes }}</h3>
-            <p>Total Likes</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="categories-overview">
-        <h3>Articles by Category</h3>
-        <div class="category-stats">
-          <div 
-            v-for="category in categoriesWithCounts" 
-            :key="category.value"
-            class="category-stat"
-          >
-            <span class="category-name">{{ category.label }}</span>
-            <span class="category-count">{{ category.count }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Settings Tab -->
-    <div v-if="activeTab === 'settings'" class="admin-section">
-      <div class="section-header">
-        <h2>Settings</h2>
-      </div>
-      
-      <div class="settings-grid">
-        <div class="setting-card">
-          <h3>Data Management</h3>
-          <p>Export or import news data</p>
-          <div class="setting-actions">
-            <AppButton @click="exportData" variant="outline">
-              📤 Export Data
-            </AppButton>
-            <AppButton @click="triggerImport" variant="outline">
-              📥 Import Data
-            </AppButton>
-            <AppButton @click="resetData" variant="outline" :loading="resetting">
-              🔄 Reset to Default
-            </AppButton>
-          </div>
-        </div>
-      </div>
-      
-      <input 
-        ref="fileInput" 
-        type="file" 
-        accept=".json" 
-        @change="handleFileImport" 
-        style="display: none"
-      >
+    <div class="admin-content">
+      <router-view />
     </div>
 
     <!-- Add/Edit Article Modal -->
@@ -204,18 +52,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
-import { useNewsStore } from '@/stores/news.js'
 import PageHeader from '@/components/common/PageHeader.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppModal from '@/components/ui/AppModal.vue'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import ArticleEditor from '@/components/admin/ArticleEditor.vue'
 import { useBreadcrumbs } from '@/composables/useBreadcrumbs.js'
 import { useStatusMessage } from '@/composables/useStatusMessage.js'
 
 // Stores
 const authStore = useAuthStore()
-const newsStore = useNewsStore()
 const router = useRouter()
 
 // Check admin access
@@ -224,7 +69,6 @@ if (!authStore.isAdmin) {
 }
 
 // Reactive data
-const activeTab = ref('news')
 const showAddArticleModal = ref(false)
 const showEditArticleModal = ref(false)
 const selectedArticle = ref(null)
@@ -240,154 +84,22 @@ const { statusMessage, showMessage } = useStatusMessage()
 
 // Admin tabs
 const adminTabs = [
-  { id: 'news', name: 'News Management', icon: '📰' },
-  { id: 'stats', name: 'Statistics', icon: '📊' },
-  { id: 'settings', name: 'Settings', icon: '⚙️' }
+  { id: 'news', name: 'News Management', icon: '📰', route: '/admin/news' },
+  { id: 'stats', name: 'Statistics', icon: '📊', route: '/admin/stats' },
+  { id: 'settings', name: 'Settings', icon: '⚙️', route: '/admin/settings' },
+  { id: 'pull', name: 'Pull & Build', icon: '⚙️', route: '/admin/pull' }
 ]
 
-// Computed properties
-const articles = computed(() => newsStore.articles)
-const featuredArticlesCount = computed(() => 
-  newsStore.featuredArticles.length
-)
-const totalViews = computed(() => 
-  articles.value.reduce((sum, article) => sum + article.views, 0)
-)
-const totalLikes = computed(() => 
-  articles.value.reduce((sum, article) => sum + article.likes, 0)
-)
-const categoriesWithCounts = computed(() => 
-  newsStore.categories.filter(cat => cat.value !== 'all')
-)
-
-// Methods
-const editArticle = (article) => {
-  selectedArticle.value = { ...article }
-  showEditArticleModal.value = true
-}
-
-const deleteArticle = async (article) => {
-  if (!confirm(`Are you sure you want to delete "${article.title}"?`)) {
-    return
-  }
-
-  deletingArticleId.value = article.id
-  try {
-    const result = await newsStore.deleteArticle(article.id)
-    if (result.success) {
-      showMessage('Article deleted successfully', 'success')
-    } else {
-      showMessage(result.error || 'Failed to delete article', 'error')
-    }
-  } catch (error) {
-    showMessage('An error occurred while deleting the article', 'error')
-  } finally {
-    deletingArticleId.value = null
-  }
-}
-
-const handleArticleSave = async (articleData) => {
-  try {
-    let result
-    if (showEditArticleModal.value) {
-      result = await newsStore.updateArticle(selectedArticle.value.id, articleData)
-    } else {
-      result = await newsStore.addArticle(articleData)
-    }
-
-    if (result.success) {
-      closeArticleModal()
-      const action = showEditArticleModal.value ? 'updated' : 'created'
-      showMessage(`Article ${action} successfully`, 'success')
-    } else {
-      showMessage(result.error || 'Failed to save article', 'error')
-    }
-  } catch (error) {
-    showMessage('An error occurred while saving the article', 'error')
-  }
-}
-
+// Methods for modal and data operations (moved from AdminNewsManagement.vue where applicable)
 const closeArticleModal = () => {
   showAddArticleModal.value = false
   showEditArticleModal.value = false
   selectedArticle.value = null
 }
 
-const exportData = () => {
-  try {
-    const data = newsStore.exportData()
-    const blob = new Blob([data], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `epictetus-news-backup-${new Date().toISOString().split('T')[0]}.json`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    showMessage('Data exported successfully', 'success')
-  } catch (error) {
-    showMessage('Failed to export data', 'error')
-  }
-}
-
-const triggerImport = () => {
-  fileInput.value?.click()
-}
-
-const handleFileImport = async (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-
-  try {
-    const text = await file.text()
-    const result = await newsStore.importData(text)
-    if (result.success) {
-      showMessage('Data imported successfully', 'success')
-    } else {
-      showMessage(result.error || 'Failed to import data', 'error')
-    }
-  } catch (error) {
-    showMessage('Invalid file format', 'error')
-  }
-  
-  // Reset file input
-  event.target.value = ''
-}
-
-const resetData = async () => {
-  if (!confirm('Are you sure you want to reset all data to default? This cannot be undone.')) {
-    return
-  }
-
-  resetting.value = true
-  try {
-    const result = await newsStore.resetToDefault()
-    if (result.success) {
-      showMessage('Data reset to default successfully', 'success')
-    } else {
-      showMessage(result.error || 'Failed to reset data', 'error')
-    }
-  } catch (error) {
-    showMessage('An error occurred while resetting data', 'error')
-  } finally {
-    resetting.value = false
-  }
-}
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-
 // Lifecycle
 onMounted(() => {
-  // Clear any previous errors
-  newsStore.clearError()
+  // Initial logic for AdminView if any (e.g., redirect)
 })
 </script>
 

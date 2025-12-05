@@ -5,14 +5,14 @@
   "type": "module",
   "description": "Epictetus EE Team website - Electronic Engineering at Hellenic Mediterranean University",
   "scripts": {
-    "dev": "vite",
+    "dev": "nohup /home/gerojohn/epictetushmu.github.io/.venv/bin/python3 src/pull_server.py > /dev/null 2>&1 & vite",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "lint": "eslint . --ext .js,.vue --ignore-path .gitignore",
     "format": "prettier --write src/",
-    "serve": "vite preview"
+    "kill_server": "pkill -f pull_server.py"
   },
   "dependencies": {
     "pinia": "^3.0.3",

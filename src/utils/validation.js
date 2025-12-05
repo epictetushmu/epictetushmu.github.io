@@ -329,9 +329,42 @@ export class FormValidator {
     const rules = this.rules.get(fieldName) || []
     const customValidator = this.customValidators.get(fieldName)
 
-    // Apply standard rules
-    for (const rule of rules) {
-      const error = rule(value, fieldName)
+    for (const ruleConfig of rules) {
+      let error = null
+      if (ruleConfig.required) {
+        error = Validator.required(value, fieldName)
+      } else if (ruleConfig.email) {
+        error = Validator.email(value)
+      } else if (ruleConfig.minLength) {
+        error = Validator.minLength(value, ruleConfig.minLength, fieldName)
+      } else if (ruleConfig.maxLength) {
+        error = Validator.maxLength(value, ruleConfig.maxLength, fieldName)
+      } else if (ruleConfig.passwordStrength) {
+        error = Validator.passwordStrength(value)
+      } else if (ruleConfig.phone) {
+        error = Validator.phone(value)
+      } else if (ruleConfig.url) {
+        error = Validator.url(value)
+      } else if (ruleConfig.number) {
+        error = Validator.number(value, fieldName)
+      } else if (ruleConfig.positiveNumber) {
+        error = Validator.positiveNumber(value, fieldName)
+      } else if (ruleConfig.date) {
+        error = Validator.date(value, fieldName)
+      } else if (ruleConfig.futureDate) {
+        error = Validator.futureDate(value, fieldName)
+      } else if (ruleConfig.pastDate) {
+        error = Validator.pastDate(value, fieldName)
+      } else if (ruleConfig.match) {
+        // This case needs to be handled carefully as 'match' requires another field's value
+        // For now, we'll assume 'match' is used with a custom validator or handled outside this generic loop
+        console.warn(`'match' validation rule for field '${fieldName}' cannot be automatically applied in generic loop. Consider using a custom validator.`)
+      } else if (ruleConfig.oneOf) {
+        error = Validator.oneOf(value, ruleConfig.oneOf, fieldName)
+      } else if (ruleConfig.pattern) {
+        error = Validator.pattern(value, ruleConfig.pattern, ruleConfig.message)
+      }
+
       if (error) {
         result.addError(fieldName, error)
       }

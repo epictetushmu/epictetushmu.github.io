@@ -11,9 +11,9 @@
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group" :class="{ 'error': errors.email?.length }">
           <label for="email">Email Address *</label>
-          <input 
-            type="email" 
-            id="email" 
+          <input
+            type="email"
+            id="email"
             :value="credentials.email"
             @input="handleFieldInput('email', $event)"
             @blur="handleFieldBlur('email')"
@@ -28,13 +28,13 @@
             {{ errors.email[0] }}
           </div>
         </div>
-        
+
         <div class="form-group" :class="{ 'error': errors.password?.length }">
           <label for="password">Password *</label>
           <div class="password-input-group">
-            <input 
-              :type="showPassword ? 'text' : 'password'" 
-              id="password" 
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              id="password"
               :value="credentials.password"
               @input="handleFieldInput('password', $event)"
               @blur="handleFieldBlur('password')"
@@ -45,8 +45,8 @@
               :aria-invalid="errors.password?.length ? 'true' : 'false'"
               :aria-describedby="errors.password?.length ? 'password-error' : null"
             >
-            <button 
-              type="button" 
+            <button
+              type="button"
               class="password-toggle"
               @click="showPassword = !showPassword"
               :aria-label="showPassword ? 'Hide password' : 'Show password'"
@@ -61,22 +61,22 @@
 
         <div class="form-options">
           <label class="remember-me">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               v-model="credentials.rememberMe"
               :disabled="isSubmitting"
             >
             <span class="checkmark"></span>
             Remember me
           </label>
-          
+
           <a href="#" @click.prevent="showForgotPassword = true" class="forgot-password">
             Forgot password?
           </a>
         </div>
-        
-        <button 
-          type="submit" 
+
+        <button
+          type="submit"
           class="btn btn-primary submit-btn"
           :disabled="!canSubmit || isSubmitting"
           :aria-describedby="!isValid ? 'form-errors' : null"
@@ -86,14 +86,14 @@
         </button>
 
         <div class="signup-prompt">
-          <p>Don't have an account? 
+          <p>Don't have an account?
             <router-link to="/signup">Create one here</router-link>
           </p>
         </div>
       </form>
-      
-      <div 
-        v-if="statusMessage.text" 
+
+      <div
+        v-if="statusMessage.text"
         class="status-message"
         :class="statusMessage.type"
         role="alert"
@@ -101,11 +101,11 @@
       >
         {{ statusMessage.text }}
       </div>
-      
-      <div 
-        v-if="!isValid && Object.keys(errors).length > 0" 
-        id="form-errors" 
-        class="form-errors" 
+
+      <div
+        v-if="!isValid && Object.keys(errors).length > 0"
+        id="form-errors"
+        class="form-errors"
         role="alert"
         aria-live="assertive"
       >
@@ -130,10 +130,10 @@
           <form @submit.prevent="handleForgotPassword" class="forgot-form">
             <div class="form-group">
               <label for="reset-email">Email Address</label>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 id="reset-email"
-                v-model="resetEmail" 
+                v-model="resetEmail"
                 placeholder="your.email@example.com"
                 required
               >
@@ -153,11 +153,13 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { useForm } from '@/composables/useForm.js'
+import { useStatusMessage } from '@/composables/useStatusMessage.js'
 import { VALIDATION_RULES, REGEX_PATTERNS } from '@/utils/validation.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { statusMessage, showMessage } = useStatusMessage()
 
 // Initialize form with comprehensive validation
 const {
@@ -165,11 +167,11 @@ const {
   errors,
   isValid,
   isSubmitting,
+  canSubmit,
   handleFieldInput,
   handleFieldBlur,
   handleSubmit,
-  resetForm,
-  showMessage
+  resetForm
 } = useForm(
   {
     email: '',
@@ -201,11 +203,11 @@ const handleLogin = async () => {
       email: formData.email,
       password: formData.password
     })
-    
+
     if (success) {
       showMessage('Login successful! Welcome back.', 'success')
       resetForm()
-      
+
       // Redirect to admin panel
       setTimeout(() => {
         router.push('/admin')
@@ -214,7 +216,7 @@ const handleLogin = async () => {
       throw new Error('Invalid email or password. Please try again.')
     }
   })
-  
+
   if (!result.success) {
     showMessage(result.error?.message || 'Login failed. Please try again.', 'error')
   }
@@ -222,17 +224,17 @@ const handleLogin = async () => {
 
 const handleForgotPassword = async () => {
   if (!resetEmail.value) return
-  
+
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     console.log('Password reset requested for:', resetEmail.value)
     showMessage(`Password reset instructions sent to ${resetEmail.value}`, 'success')
-    
+
     showForgotPassword.value = false
     resetEmail.value = ''
-    
+
   } catch (error) {
     console.error('Password reset failed:', error)
     showMessage('Failed to send reset instructions. Please try again.', 'error')
@@ -459,25 +461,25 @@ const handleForgotPassword = async () => {
   .login-form-container {
     padding: 1.5rem;
   }
-  
+
   .login-header {
     margin-bottom: 2rem;
   }
-  
+
   .form-options {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .modal-overlay {
     padding: 0.5rem;
   }
-  
+
   .modal-header {
     padding: 1rem;
   }
-  
+
   .modal-body {
     padding: 1rem;
   }
