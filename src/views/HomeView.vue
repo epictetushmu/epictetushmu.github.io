@@ -121,11 +121,11 @@
           <p>Highlights from our recent engineering innovations</p>
         </div>
         <div class="gallery-grid">
-          <div class="gallery-item" @click="openModal('https://placehold.co/800x600/f59e0b/white?text=Transistor+Clock')">
-            <img src="https://placehold.co/800x600/f59e0b/white?text=Transistor+Clock" alt="Transistor Clock Image">
+          <div class="gallery-item" @click="openModal('/clock.jpg')">
+            <img src="/clock.jpg" alt="Transistor Clock Image">
             <div class="gallery-overlay">
                 <h3 class="gallery-title">Transistor Clock</h3>
-                <p class="gallery-desc">Text Here</p>
+                <p class="gallery-desc">A Digital Clock made from Discrete Components</p>
             </div>
           </div>
           <div class="gallery-item" @click="openModal('https://placehold.co/800x600/ef4444/white?text=Project+Here')">
