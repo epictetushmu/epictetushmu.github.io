@@ -128,11 +128,11 @@
                 <p class="gallery-desc">A Digital Clock made from Discrete Components</p>
             </div>
           </div>
-          <div class="gallery-item" @click="openModal('https://placehold.co/800x600/ef4444/white?text=Project+Here')">
-            <img src="https://placehold.co/800x600/ef4444/white?text=Project+Here" alt="Project Here">
+          <div class="gallery-item" @click="openModal('/microscope.jpg')">
+            <img src="/microscope.jpg" alt="Project Here">
             <div class="gallery-overlay">
-                <h3 class="gallery-title">Project Here</h3>
-                <p class="gallery-desc">Text Here</p>
+                <h3 class="gallery-title">DIY Microscope with ACD</h3>
+                <p class="gallery-desc">A DIY Mircroscope with Advanced-Chip-Detection</p>
             </div>
           </div>
           <div class="gallery-item" @click="openModal('https://placehold.co/800x600/ef4444/white?text=Project+Here')">
