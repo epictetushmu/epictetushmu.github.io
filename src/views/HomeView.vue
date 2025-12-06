@@ -121,18 +121,18 @@
           <p>Highlights from our recent engineering innovations</p>
         </div>
         <div class="gallery-grid">
-          <div class="gallery-item" @click="openModal('https://placehold.co/800x600/f59e0b/white?text=Transistor+Clock')">
-            <img src="https://placehold.co/800x600/f59e0b/white?text=Transistor+Clock" alt="Transistor Clock Image">
+          <div class="gallery-item" @click="openModal('/clock.jpg')">
+            <img src="/clock.jpg" alt="Transistor Clock Image">
             <div class="gallery-overlay">
                 <h3 class="gallery-title">Transistor Clock</h3>
-                <p class="gallery-desc">Text Here</p>
+                <p class="gallery-desc">A Digital Clock made from Discrete Components</p>
             </div>
           </div>
-          <div class="gallery-item" @click="openModal('https://placehold.co/800x600/ef4444/white?text=Project+Here')">
-            <img src="https://placehold.co/800x600/ef4444/white?text=Project+Here" alt="Project Here">
+          <div class="gallery-item" @click="openModal('/microscope.jpg')">
+            <img src="/microscope.jpg" alt="Project Here">
             <div class="gallery-overlay">
-                <h3 class="gallery-title">Project Here</h3>
-                <p class="gallery-desc">Text Here</p>
+                <h3 class="gallery-title">DIY Microscope with ACD</h3>
+                <p class="gallery-desc">A DIY Mircroscope with Advanced-Chip-Detection</p>
             </div>
           </div>
           <div class="gallery-item" @click="openModal('https://placehold.co/800x600/ef4444/white?text=Project+Here')">
@@ -376,7 +376,7 @@ onUnmounted(() => {
 <style scoped>
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    background: url('/20250529_214107.jpg') no-repeat center center/cover;
     color: white;
     padding: 6rem 0 4rem;
     position: relative;
@@ -386,12 +386,13 @@ onUnmounted(() => {
 .hero::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 100%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    transform: rotate(30deg);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+    transform: rotate(0deg);
 }
 
 .hero-content {
