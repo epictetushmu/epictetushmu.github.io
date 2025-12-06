@@ -376,7 +376,7 @@ onUnmounted(() => {
 <style scoped>
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    background: url('/20250529_214107.jpg') no-repeat center center/cover;
     color: white;
     padding: 6rem 0 4rem;
     position: relative;
@@ -386,12 +386,13 @@ onUnmounted(() => {
 .hero::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 100%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    transform: rotate(30deg);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+    transform: rotate(0deg);
 }
 
 .hero-content {
