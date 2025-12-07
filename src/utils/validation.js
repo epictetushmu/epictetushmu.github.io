@@ -324,7 +324,7 @@ export class FormValidator {
    * @param {any} value - Value to validate
    * @returns {ValidationResult} - Validation result
    */
-  validateField(fieldName, value) {
+  validateField(fieldName, value, formData = {}) {
     const result = new ValidationResult()
     const rules = this.rules.get(fieldName) || []
     const customValidator = this.customValidators.get(fieldName)
@@ -372,7 +372,7 @@ export class FormValidator {
 
     // Apply custom validator
     if (customValidator) {
-      const customError = customValidator(value, fieldName)
+      const customError = customValidator(value, formData)
       if (customError) {
         result.addError(fieldName, customError)
       }
@@ -390,7 +390,7 @@ export class FormValidator {
     const result = new ValidationResult()
 
     for (const [fieldName, value] of Object.entries(formData)) {
-      const fieldResult = this.validateField(fieldName, value)
+      const fieldResult = this.validateField(fieldName, value, formData)
       if (!fieldResult.isValid) {
         result.errors.push(...fieldResult.errors)
       }

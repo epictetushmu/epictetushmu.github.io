@@ -36,13 +36,13 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('epictetus_user', JSON.stringify(user.value))
         localStorage.setItem('epictetus_token', 'mock-jwt-token')
 
-        return { success: true }
+        return true
       } else {
         throw new Error('Invalid credentials')
       }
     } catch (err) {
       error.value = err.message
-      return { success: false, error: err.message }
+      return false
     } finally {
       isLoading.value = false
     }
