@@ -127,7 +127,39 @@
                 @click="showPassword = !showPassword"
                 :aria-label="showPassword ? 'Hide password' : 'Show password'"
               >
-                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                <svg
+                  v-if="showPassword"
+                  class="password-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg
+                  v-else
+                  class="password-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 3l18 18" />
+                  <path d="M10.58 10.58a3 3 0 0 0 4.24 4.24" />
+                  <path d="M9.88 9.88a3 3 0 0 1 4.24 4.24" />
+                  <path d="M21 12s-3.5 6-9 6c-1.6 0-3.1-.36-4.46-1" />
+                  <path d="M3 12s1.6-3.4 5-5" />
+                  <path d="M12 6c1.31 0 2.57.26 3.72.72" />
+                </svg>
+                <span class="sr-only">{{ showPassword ? 'Hide password' : 'Show password' }}</span>
               </button>
             </div>
             <div v-if="errors.password?.length" id="password-error" class="error-message" role="alert">
@@ -157,7 +189,39 @@
                 @click="showPasswordConfirm = !showPasswordConfirm"
                 :aria-label="showPasswordConfirm ? 'Hide password' : 'Show password'"
               >
-                {{ showPasswordConfirm ? '👁️' : '👁️‍🗨️' }}
+                <svg
+                  v-if="showPasswordConfirm"
+                  class="password-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg
+                  v-else
+                  class="password-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 3l18 18" />
+                  <path d="M10.58 10.58a3 3 0 0 0 4.24 4.24" />
+                  <path d="M9.88 9.88a3 3 0 0 1 4.24 4.24" />
+                  <path d="M21 12s-3.5 6-9 6c-1.6 0-3.1-.36-4.46-1" />
+                  <path d="M3 12s1.6-3.4 5-5" />
+                  <path d="M12 6c1.31 0 2.57.26 3.72.72" />
+                </svg>
+                <span class="sr-only">{{ showPasswordConfirm ? 'Hide password' : 'Show password' }}</span>
               </button>
             </div>
             <div v-if="errors.passwordConfirm?.length" id="passwordConfirm-error" class="error-message" role="alert">
@@ -451,7 +515,6 @@ const submitForm = async () => {
   border: none;
   cursor: pointer;
   padding: 0.25rem;
-  font-size: 1.2rem;
   color: var(--text-secondary);
   border-radius: var(--border-radius);
   transition: var(--transition);
@@ -460,6 +523,23 @@ const submitForm = async () => {
 .password-toggle:hover {
   background-color: var(--border-color);
   color: var(--text-primary);
+}
+
+.password-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: block;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 .field-help {
