@@ -63,7 +63,8 @@
           <label class="remember-me">
             <input
               type="checkbox"
-              v-model="credentials.rememberMe"
+              :checked="credentials.rememberMe"
+              @change="handleFieldInput('rememberMe', $event)"
               :disabled="isSubmitting"
             >
             <span class="checkmark"></span>
@@ -150,7 +151,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { useForm } from '@/composables/useForm.js'
 import { useStatusMessage } from '@/composables/useStatusMessage.js'
@@ -158,6 +159,7 @@ import { VALIDATION_RULES, REGEX_PATTERNS } from '@/utils/validation.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const { statusMessage, showMessage } = useStatusMessage()
 
@@ -208,10 +210,9 @@ const handleLogin = async () => {
       showMessage('Login successful! Welcome back.', 'success')
       resetForm()
 
-      // Redirect to admin panel
-      setTimeout(() => {
-        router.push('/admin')
-      }, 1000)
+      // Honor redirect query if present, otherwise take admins to admin, others home
+      const redirectPath = route.query.redirect || (authStore.isAdmin ? '/admin' : '/')
+      router.push(redirectPath)
     } else {
       throw new Error('Invalid email or password. Please try again.')
     }
@@ -270,6 +271,37 @@ const handleForgotPassword = async () => {
 
 .form-group {
   margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.form-group input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-group.error input {
+  border-color: var(--error-color);
+}
+
+.form-group.error input:focus {
+  outline-color: var(--error-color);
 }
 
 .password-input-group {
@@ -374,6 +406,30 @@ const handleForgotPassword = async () => {
   border-radius: var(--border-radius);
   font-weight: 500;
   animation: slideIn 0.3s ease;
+}
+
+.status-message.success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.status-message.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
+
+.status-message.warning {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+.status-message.info {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #3b82f6;
 }
 
 /* Modal styles */
