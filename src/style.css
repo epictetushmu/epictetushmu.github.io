@@ -1,7 +1,10 @@
 :root {
     --primary: #1e40af;
     --primary-dark: #1d4ed8;
+    --primary-color: #1e40af;
+    --primary-hover: #1d4ed8;
     --secondary: #0ea5e9;
+    --secondary-color: #0ea5e9;
     --accent: #8b5cf6;
     --light: #f8fafc;
     --dark: #0f172a;
@@ -9,6 +12,15 @@
     --light-gray: #e2e8f0;
     --success: #10b981;
     --warning: #f59e0b;
+    --error-color: #ef4444;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --background-primary: #ffffff;
+    --background-secondary: #f8fafc;
+    --border-color: #e2e8f0;
+    --border-radius: 8px;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -37,6 +49,20 @@ h1, h2, h3, h4, h5, h6 {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
+}
+
+.page-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    min-height: calc(100vh - 200px);
+}
+
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1rem;
+    }
 }
 
 /* Header Styles (moved to App.vue's style block) */
