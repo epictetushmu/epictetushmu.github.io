@@ -133,10 +133,12 @@
 import { ref, onMounted } from 'vue'
 import { useEmailJS } from '../composables/useEmailJS.js'
 import { useForm } from '../composables/useForm.js'
+import { useStatusMessage } from '../composables/useStatusMessage.js'
 import { VALIDATION_RULES, REGEX_PATTERNS } from '../utils/validation.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const { sendEmail } = useEmailJS()
+const { statusMessage, showMessage } = useStatusMessage()
 
 // Initialize form with comprehensive validation
 const {
@@ -147,8 +149,7 @@ const {
   handleFieldInput,
   handleFieldBlur,
   handleSubmit,
-  resetForm,
-  showMessage
+  resetForm
 } = useForm(
   {
     email: '',
@@ -288,10 +289,34 @@ const submitForm = async () => {
   margin-bottom: 1.5rem;
 }
 
+.contact-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.contact-form textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .form-group {
@@ -318,6 +343,24 @@ const submitForm = async () => {
   border-radius: var(--border-radius);
   font-weight: 500;
   animation: slideIn 0.3s ease;
+}
+
+.status-message.success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.status-message.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
+
+.status-message.info {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #3b82f6;
 }
 
 @keyframes slideIn {
