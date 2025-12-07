@@ -51,7 +51,39 @@
               @click="showPassword = !showPassword"
               :aria-label="showPassword ? 'Hide password' : 'Show password'"
             >
-              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              <svg
+                v-if="showPassword"
+                class="password-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <svg
+                v-else
+                class="password-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 3l18 18" />
+                <path d="M10.58 10.58a3 3 0 0 0 4.24 4.24" />
+                <path d="M9.88 9.88a3 3 0 0 1 4.24 4.24" />
+                <path d="M21 12s-3.5 6-9 6c-1.6 0-3.1-.36-4.46-1" />
+                <path d="M3 12s1.6-3.4 5-5" />
+                <path d="M12 6c1.31 0 2.57.26 3.72.72" />
+              </svg>
+              <span class="sr-only">{{ showPassword ? 'Hide password' : 'Show password' }}</span>
             </button>
           </div>
           <div v-if="errors.password?.length" id="password-error" class="error-message" role="alert">
@@ -63,7 +95,8 @@
           <label class="remember-me">
             <input
               type="checkbox"
-              v-model="credentials.rememberMe"
+              :checked="credentials.rememberMe"
+              @change="handleFieldInput('rememberMe', $event)"
               :disabled="isSubmitting"
             >
             <span class="checkmark"></span>
@@ -150,7 +183,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { useForm } from '@/composables/useForm.js'
 import { useStatusMessage } from '@/composables/useStatusMessage.js'
@@ -158,6 +191,7 @@ import { VALIDATION_RULES, REGEX_PATTERNS } from '@/utils/validation.js'
 import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const { statusMessage, showMessage } = useStatusMessage()
 
@@ -208,10 +242,9 @@ const handleLogin = async () => {
       showMessage('Login successful! Welcome back.', 'success')
       resetForm()
 
-      // Redirect to admin panel
-      setTimeout(() => {
-        router.push('/admin')
-      }, 1000)
+      // Honor redirect query if present, otherwise take admins to admin, others home
+      const redirectPath = route.query.redirect || (authStore.isAdmin ? '/admin' : '/')
+      router.push(redirectPath)
     } else {
       throw new Error('Invalid email or password. Please try again.')
     }
@@ -272,6 +305,37 @@ const handleForgotPassword = async () => {
   margin-bottom: 1.5rem;
 }
 
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.form-group input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-group.error input {
+  border-color: var(--error-color);
+}
+
+.form-group.error input:focus {
+  outline-color: var(--error-color);
+}
+
 .password-input-group {
   position: relative;
 }
@@ -289,7 +353,6 @@ const handleForgotPassword = async () => {
   border: none;
   cursor: pointer;
   padding: 0.25rem;
-  font-size: 1.2rem;
   color: var(--text-secondary);
   border-radius: var(--border-radius);
   transition: var(--transition);
@@ -298,6 +361,23 @@ const handleForgotPassword = async () => {
 .password-toggle:hover {
   background-color: var(--border-color);
   color: var(--text-primary);
+}
+
+.password-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: block;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 .form-options {
@@ -374,6 +454,30 @@ const handleForgotPassword = async () => {
   border-radius: var(--border-radius);
   font-weight: 500;
   animation: slideIn 0.3s ease;
+}
+
+.status-message.success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.status-message.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
+
+.status-message.warning {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+.status-message.info {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #3b82f6;
 }
 
 /* Modal styles */

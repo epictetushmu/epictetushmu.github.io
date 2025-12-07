@@ -4,7 +4,7 @@
  */
 
 import { ref, reactive, computed, watch } from 'vue'
-import { formValidator, ValidationResult } from '../utils/validation.js'
+import { FormValidator } from '../utils/validation.js'
 import { errorHandler, ERROR_TYPES } from '../utils/errorHandler.js'
 
 /**
@@ -29,6 +29,9 @@ export function useForm(initialData = {}, validationRules = {}, options = {}) {
   const isValid = ref(true)
   const isDirty = ref(false)
 
+  // Local validator instance so rules don't leak across forms
+  const formValidator = new FormValidator()
+
   // Setup validation rules
   Object.entries(validationRules).forEach(([field, rules]) => {
     formValidator.addRule(field, rules)
@@ -51,8 +54,9 @@ export function useForm(initialData = {}, validationRules = {}, options = {}) {
    * @returns {boolean} - Whether the field is valid
    */
   const validateField = (fieldName) => {
-    const result = formValidator.validateField(fieldName, formData[fieldName])
+    const result = formValidator.validateField(fieldName, formData[fieldName], formData)
     errors[fieldName] = result.getErrorsForField(fieldName).map(err => err.message)
+    isValid.value = Object.values(errors).every(fieldErrors => !fieldErrors?.length)
     return result.isValid
   }
 
@@ -136,7 +140,7 @@ export function useForm(initialData = {}, validationRules = {}, options = {}) {
    */
   const resetForm = () => {
     Object.keys(formData).forEach(key => {
-      formData[key] = initialData[key] || ''
+      formData[key] = initialData[key] ?? ''
     })
     clearErrors()
     Object.keys(touched).forEach(key => delete touched[key])
@@ -171,8 +175,11 @@ export function useForm(initialData = {}, validationRules = {}, options = {}) {
    * @param {string} fieldName - Name of the field
    * @param {Event} event - Input event
    */
-  const handleFieldInput = (fieldName, event) => {
-    setFieldValue(fieldName, event.target.value)
+  const handleFieldInput = (fieldName, valueOrEvent) => {
+    const nextValue = valueOrEvent?.target
+      ? (valueOrEvent.target.type === 'checkbox' ? valueOrEvent.target.checked : valueOrEvent.target.value)
+      : valueOrEvent
+    setFieldValue(fieldName, nextValue)
   }
 
   /**
@@ -224,6 +231,13 @@ export function useForm(initialData = {}, validationRules = {}, options = {}) {
       newData[key] !== (initialData[key] || '')
     )
     isDirty.value = hasChanges
+    
+    // Re-validate passwordConfirm when password changes
+    if (oldData && 'password' in newData && 'passwordConfirm' in newData) {
+      if (newData.password !== oldData.password && touched.passwordConfirm) {
+        validateField('passwordConfirm')
+      }
+    }
   }, { deep: true })
 
   // Computed properties
@@ -286,9 +300,10 @@ export function useField(fieldName, initialValue = '', validationRules = []) {
   const touched = ref(false)
   const isValid = ref(true)
 
-  // Setup validation rules for this field
+  // Dedicated validator instance per field to avoid rule bleed
+  const fieldValidator = new FormValidator()
   if (validationRules.length > 0) {
-    formValidator.addRule(fieldName, validationRules)
+    fieldValidator.addRule(fieldName, validationRules)
   }
 
   /**
@@ -296,7 +311,7 @@ export function useField(fieldName, initialValue = '', validationRules = []) {
    * @returns {boolean} - Whether the field is valid
    */
   const validate = () => {
-    const result = formValidator.validateField(fieldName, value.value)
+    const result = fieldValidator.validateField(fieldName, value.value, { [fieldName]: value.value })
     error.value = result.getFirstErrorForField(fieldName)
     isValid.value = result.isValid
     return result.isValid
